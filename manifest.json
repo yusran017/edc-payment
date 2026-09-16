@@ -1,13 +1,13 @@
 {
-  "name": "ระบบบันทึกโอนเงินหน้าลาน",
-  "short_name": "EDC Premium",
+  "name": "Mobile Payment ID 4909",
+  "short_name": "Mobile Payment ID 4909",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0b1120",
   "theme_color": "#0b1120",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2830/2830284.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/6554/6554157.png",
       "sizes": "512x512",
       "type": "image/png"
     }
