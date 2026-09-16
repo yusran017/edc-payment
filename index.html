@@ -9,8 +9,6 @@
   <meta name="theme-color" content="#0b1120">
   
   <title>ระบบบันทึกโอนเงินหน้าลาน - EDC Premium</title>
-  
-  <!-- เพิ่มบรรทัดเรียกไฟล์ manifest.json เพื่อปลดล็อกปุ่มติดตั้งแอป -->
   <link rel="manifest" href="manifest.json">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,7 +23,10 @@
       --btn-border: #2d3f5d;
       --text: #f8fafc;
       --text-muted: #8496b0;
-      --pump-active: #10b981;
+      
+      --pump-active-start: #7dd3fc;
+      --pump-active-end: #0ea5e9;
+      
       --g95: #ea580c;
       --e20: #10b981;
       --b7: #2563eb;
@@ -37,16 +38,15 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg); color: var(--text); padding: 8px; padding-bottom: 90px; }
+    /* ปรับสมดุลขอบจอให้พอดี ไม่เบียดขอบจนเกินไป */
+    body { background-color: var(--bg); color: var(--text); padding: 12px; padding-bottom: 90px; }
     .container { max-width: 480px; margin: 0 auto; }
     
-    /* Animations */
     @keyframes slideDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes popIn { 0% { opacity: 0; transform: scale(0.9); } 70% { transform: scale(1.03); } 100% { opacity: 1; transform: scale(1); } }
     @keyframes popCheck { 0% { transform: scale(0) rotate(-45deg); } 100% { transform: scale(1) rotate(0); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    /* Header */
     .header { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; padding: 18px 16px; border-radius: var(--radius); border: 1px solid var(--btn-border); box-shadow: 0 10px 25px rgba(0,0,0,0.5); margin-bottom: 14px; position: relative; overflow: hidden; animation: slideDown 0.4s ease-out; }
     .header::after { content: ''; position: absolute; width: 140px; height: 140px; background: rgba(59, 130, 246, 0.08); border-radius: 50%; top: -40px; right: -40px; }
     .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; position: relative; z-index: 2; }
@@ -54,95 +54,70 @@
     .promptpay-id { font-size: 11px; font-weight: 500; color: #93c5fd; background: rgba(15, 23, 42, 0.6); padding: 4px 10px; border-radius: 8px; border: 1px solid #1e3a8a; }
     .header h1 { font-size: 20px; font-weight: 700; line-height: 1.3; position: relative; z-index: 2; }
     
-    /* Stats Summary */
-    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; animation: slideDown 0.5s ease-out; }
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; animation: slideDown 0.5s ease-out; }
     .summary-card { background: var(--card-bg); padding: 14px; border-radius: var(--radius); box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; border: 1px solid var(--btn-border); }
     .summary-title { font-size: 12px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
     .summary-value { font-size: 20px; font-weight: 700; margin-top: 5px; }
     .summary-value.highlight { color: var(--warning); }
     .summary-value.total { color: #38bdf8; }
     
-    /* Main EDC Card */
-    .card { background: var(--card-bg); border-radius: var(--radius); padding: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); margin-bottom: 20px; border: 1px solid var(--btn-border); animation: slideDown 0.6s ease-out; }
-    .section-label { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; }
+    .card { background: var(--card-bg); border-radius: var(--radius); padding: 18px 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); margin-bottom: 20px; border: 1px solid var(--btn-border); animation: slideDown 0.6s ease-out; }
+    .section-label { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; }
     .section-label span { display: flex; align-items: center; gap: 6px; }
 
-    /* Phone Button */
-    .btn-phone { width: 36px; height: 36px; border-radius: 12px; background: var(--btn-bg); border: 1px solid var(--btn-border); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; position: relative; }
-    .btn-phone.has-data { color: #38bdf8; border-color: #0284c7; background: rgba(2, 132, 199, 0.2); box-shadow: 0 0 10px rgba(56, 189, 248, 0.4); }
+    .action-buttons-right { display: flex; gap: 14px; align-items: center; }
+    
+    .btn-card-scan { width: 40px; height: 40px; border-radius: 12px; background: var(--btn-bg); border: 1px solid var(--btn-border); color: #a78bfa; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; position: relative; }
+    .btn-card-scan.has-data { color: white; border-color: #8b5cf6; background: rgba(139, 92, 246, 0.8); box-shadow: 0 0 12px rgba(139, 92, 246, 0.5); }
+    .btn-card-scan:active { transform: scale(0.9); }
+    .card-badge { position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; background: #22c55e; border-radius: 50%; display: none; }
+    .btn-card-scan.has-data .card-badge { display: block; }
+
+    .btn-phone { width: 40px; height: 40px; border-radius: 12px; background: var(--btn-bg); border: 1px solid var(--btn-border); color: #38bdf8; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; position: relative; }
+    .btn-phone.has-data { color: white; border-color: #0284c7; background: rgba(2, 132, 199, 0.8); box-shadow: 0 0 12px rgba(56, 189, 248, 0.5); }
     .btn-phone:active { transform: scale(0.9); }
-    .phone-badge { position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; background: var(--danger); border-radius: 50%; display: none; }
+    .phone-badge { position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; background: #22c55e; border-radius: 50%; display: none; }
     .btn-phone.has-data .phone-badge { display: block; }
 
-    /* Liquid Glass Buttons (Grid) */
-    .grid-pumps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 18px; }
+    /* ปรับสมดุลปุ่มหน้าจ่ายและน้ำมัน ให้มีระยะห่างสบายตา */
+    .grid-pumps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
     .grid-pump-btn { background: var(--btn-bg); color: #cbd5e1; border: 1px solid var(--btn-border); height: 50px; border-radius: 12px; font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
     .grid-pump-btn:active { transform: scale(0.92); }
     
-    .grid-oils { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
+    .grid-oils { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 22px; }
     .grid-oil-btn { background: var(--btn-bg); color: #cbd5e1; border: 1px solid var(--btn-border); height: 50px; border-radius: 12px; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
     .grid-oil-btn.disabled { opacity: 0.2; pointer-events: none; filter: grayscale(100%); background: #0f172a; border-color: transparent;}
 
-    .grid-pump-btn.active {
-      background: linear-gradient(135deg, #34d399, #10b981); color: #ffffff; border: 1px solid #6ee7b7;
-      box-shadow: inset 0 3px 5px rgba(255, 255, 255, 0.5), inset 0 -3px 5px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(16, 185, 129, 0.4);
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3); transform: translateY(-2px);
-    }
-    
-    .grid-oil-btn.g95.active {
-      background: linear-gradient(135deg, #fb923c, #ea580c); color: #ffffff; border: 1px solid #fdba74;
-      box-shadow: inset 0 3px 5px rgba(255, 255, 255, 0.5), inset 0 -3px 5px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(234, 88, 12, 0.4);
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3); transform: translateY(-2px);
-    }
-    
-    .grid-oil-btn.e20.active {
-      background: linear-gradient(135deg, #34d399, #10b981); color: #ffffff; border: 1px solid #6ee7b7;
-      box-shadow: inset 0 3px 5px rgba(255, 255, 255, 0.5), inset 0 -3px 5px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(16, 185, 129, 0.4);
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3); transform: translateY(-2px);
-    }
-    
-    .grid-oil-btn.b7.active {
-      background: linear-gradient(135deg, #60a5fa, #2563eb); color: #ffffff; border: 1px solid #93c5fd;
-      box-shadow: inset 0 3px 5px rgba(255, 255, 255, 0.5), inset 0 -3px 5px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(37, 99, 235, 0.4);
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3); transform: translateY(-2px);
-    }
+    .grid-pump-btn.active { background: linear-gradient(135deg, var(--pump-active-start), var(--pump-active-end)); color: #ffffff; border: 1px solid #bae6fd; box-shadow: inset 0 3px 5px rgba(255, 255, 255, 0.5), 0 5px 15px rgba(14, 165, 233, 0.4); text-shadow: 0 1px 2px rgba(0,0,0,0.3); transform: translateY(-2px); }
+    .grid-oil-btn.g95.active { background: linear-gradient(135deg, #fb923c, #ea580c); color: #ffffff; border: 1px solid #fdba74; box-shadow: inset 0 3px 5px rgba(255, 255, 255, 0.5), inset 0 -3px 5px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(234, 88, 12, 0.4); text-shadow: 0 1px 2px rgba(0,0,0,0.3); transform: translateY(-2px); }
+    .grid-oil-btn.e20.active { background: linear-gradient(135deg, #34d399, #10b981); color: #ffffff; border: 1px solid #6ee7b7; box-shadow: inset 0 3px 5px rgba(255, 255, 255, 0.5), inset 0 -3px 5px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(16, 185, 129, 0.4); text-shadow: 0 1px 2px rgba(0,0,0,0.3); transform: translateY(-2px); }
+    .grid-oil-btn.b7.active { background: linear-gradient(135deg, #60a5fa, #2563eb); color: #ffffff; border: 1px solid #93c5fd; box-shadow: inset 0 3px 5px rgba(255, 255, 255, 0.5), inset 0 -3px 5px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(37, 99, 235, 0.4); text-shadow: 0 1px 2px rgba(0,0,0,0.3); transform: translateY(-2px); }
 
-    /* Amount Input Group */
-    .amount-wrapper { position: relative; display: flex; align-items: center; margin-bottom: 12px; }
-    .amount-input { 
-      width: 100%; height: 68px; background: #090e17; border: 2px solid var(--btn-border); border-radius: 14px; 
-      font-size: 32px !important; font-weight: 700 !important; color: #38bdf8 !important; 
-      text-align: center; outline: none; transition: all 0.3s;
-      padding-left: 48px; padding-right: 48px; 
-    }
+    .amount-wrapper { position: relative; display: flex; align-items: center; margin-bottom: 16px; }
+    .amount-input { width: 100%; height: 68px; background: #090e17; border: 2px solid var(--btn-border); border-radius: 14px; font-size: 32px !important; font-weight: 700 !important; color: #38bdf8 !important; text-align: center; outline: none; transition: all 0.3s; padding-left: 48px; padding-right: 48px; }
     .amount-input:focus { border-color: #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.25); }
     
-    /* Clear Button */
     .btn-clear-input { position: absolute; right: 14px; width: 30px; height: 30px; background: #223049; color: #94a3b8; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; opacity: 0; pointer-events: none; }
     .btn-clear-input.show { opacity: 1; pointer-events: auto; }
     .btn-clear-input:active { transform: scale(0.85); background: #334155; color: white; }
     
-    /* Quick Buttons */
-    .quick-amount { display: flex; gap: 8px; margin-bottom: 20px; }
+    .quick-amount { display: flex; gap: 8px; margin-bottom: 22px; }
     .quick-btn { flex: 1; padding: 10px 0; font-size: 13px; font-weight: 600; background: var(--btn-bg); border: 1px solid var(--btn-border); border-radius: 10px; color: #cbd5e1; cursor: pointer; transition: all 0.2s; }
     .quick-btn:hover { border-color: #38bdf8; color: #38bdf8; }
     .quick-btn:active { transform: scale(0.92); }
     
-    /* Main Actions */
     .action-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .btn-qr-show, .btn-submit { height: 56px; border: none; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: white; transition: all 0.2s; }
     .btn-qr-show { background: linear-gradient(135deg, #0284c7, #2563eb); box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3); }
     .btn-submit { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); }
     .btn-qr-show:active, .btn-submit:active { transform: scale(0.95); box-shadow: none; }
     
-    /* Record List */
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 0 4px; }
     .section-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: #cbd5e1; }
     .header-actions { display: flex; gap: 8px; }
     .btn-export, .btn-reset { padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
     .btn-export { background: var(--excel); color: white; box-shadow: 0 4px 10px rgba(16, 124, 65, 0.3); }
     .btn-reset { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-    .btn-export:active, .btn-reset:active { transform: scale(0.93); }
     
     .record-list { display: flex; flex-direction: column; gap: 12px; }
     .record-item { background: var(--card-bg); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 1px solid var(--btn-border); position: relative; overflow: hidden; animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -160,11 +135,11 @@
     .tag-b7 { background: rgba(59, 130, 246, 0.15); color: var(--b7); border: 1px solid rgba(59, 130, 246, 0.3); }
     .tag-slip { background: rgba(254, 240, 138, 0.15); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.3); display: flex; align-items: center; gap: 4px; }
     .tag-phone { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); display: flex; align-items: center; gap: 4px; }
+    .tag-card { background: rgba(139, 92, 246, 0.15); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3); display: flex; align-items: center; gap: 4px; }
     .amount { font-size: 22px; font-weight: 700; color: #f8fafc; }
     
     .record-bottom { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); border-top: 1px dashed var(--btn-border); padding-top: 12px; margin-left: 6px; }
     .record-actions { display: flex; gap: 8px; align-items: center; }
-    
     .btn-status { width: 36px; height: 36px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
     .btn-status.pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
     .btn-status.cleared { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
@@ -175,89 +150,70 @@
     .btn-delete:active { background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: #ef4444; }
 
     /* Modals */
-    .modal-overlay { 
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-      background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(6px); 
-      display: none; align-items: center; justify-content: center; 
-      z-index: 1000; padding: 12px; opacity: 0; transition: opacity 0.3s ease; 
-    }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 12px; opacity: 0; transition: opacity 0.3s ease; }
     .modal-overlay.active { display: flex; opacity: 1; }
-    
-    .modal-card { 
-      background: var(--card-bg); border-radius: 24px; overflow: hidden; 
-      text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.8); 
-      border: 1px solid var(--btn-border); transform: scale(0.9); transition: transform 0.3s; 
-    }
+    .modal-card { background: var(--card-bg); border-radius: 24px; overflow: hidden; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.8); border: 1px solid var(--btn-border); transform: scale(0.9); transition: transform 0.3s; }
     .modal-overlay.active .modal-card { transform: scale(1); }
 
-    /* Phone Modal Specific */
-    #phoneModal { align-items: flex-start; padding-top: 15vh; }
-    #phoneModal .modal-card { width: 95%; max-width: 360px; }
-    .phone-modal-body { padding: 28px 20px; }
-    .phone-modal-body h3 { color: white; margin-bottom: 8px; font-size: 18px; }
-    .phone-input { width: 100%; height: 60px; background: #090e17; border: 2px solid var(--btn-border); border-radius: 14px; font-size: 24px; text-align: center; color: #38bdf8; outline: none; margin-bottom: 20px; letter-spacing: 2px; transition: all 0.3s;}
-    .phone-input:focus { border-color: #38bdf8; }
+    /* Scanner Live Modal */
+    #liveScannerModal .modal-card { width: 100%; max-width: 400px; background: #0b1120; border-color: #8b5cf6; }
+    .scanner-header { padding: 16px; background: #1e293b; font-size: 16px; font-weight: 700; color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--btn-border); }
+    .scanner-body { position: relative; width: 100%; aspect-ratio: 4/3; background: black; overflow: hidden; }
+    .scanner-video { width: 100%; height: 100%; object-fit: cover; }
+    .scanner-overlay-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 50%; border: 3px solid rgba(139, 92, 246, 0.8); border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6); }
+    .scanner-laser { position: absolute; width: 100%; height: 2px; background: #a78bfa; box-shadow: 0 0 10px #a78bfa; top: 0; animation: scanLaser 2s infinite ease-in-out; }
+    @keyframes scanLaser { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
+    .scanner-footer { padding: 16px; display: flex; justify-content: center; }
+    .btn-close-scanner { background: #334155; color: white; border: none; padding: 12px 30px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s;}
+    .btn-close-scanner:active { background: #ef4444; }
+
+    /* General Inputs Modals (Phone & Card) */
+    .input-modal { align-items: flex-start; padding-top: 15vh; }
+    .input-modal .modal-card { width: 95%; max-width: 360px; }
+    .input-modal-body { padding: 28px 20px; }
+    .input-modal-body h3 { color: white; margin-bottom: 8px; font-size: 18px; }
+    
+    /* แก้ไขระยะห่างระหว่างช่องกรอกและปุ่มให้ออกห่างกันสบายตา */
+    .input-row { display: flex; gap: 8px; margin-bottom: 24px; }
+    .member-input { flex: 1; height: 60px; background: #090e17; border: 2px solid var(--btn-border); border-radius: 14px; font-size: 24px; text-align: center; outline: none; letter-spacing: 2px; transition: all 0.3s; margin-bottom: 24px;}
+    
+    /* กรณีซ่อน margin ถ้าอยู่ใน row เดียวกับปุ่มสแกน */
+    .input-row .member-input { margin-bottom: 0; }
+
+    /* Specific Colors */
+    #memberPhoneInput { color: #38bdf8; }
+    #memberPhoneInput:focus { border-color: #38bdf8; }
+    #memberCardInput { color: #a78bfa; font-size: 18px; }
+    #memberCardInput:focus { border-color: #8b5cf6; }
+
+    .btn-scan-inside { width: 60px; height: 60px; background: #1e293b; border: 2px solid var(--btn-border); border-radius: 14px; color: #a78bfa; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;}
+    .btn-scan-inside:active { transform: scale(0.9); background: #8b5cf6; color: white; border-color: #8b5cf6;}
 
     /* QR Modal Specific */
-    #qrModal .modal-card { 
-      width: 100%; max-width: 500px; height: 96vh; max-height: 850px; 
-      display: flex; flex-direction: column; 
-    }
+    #qrModal .modal-card { width: 100%; max-width: 500px; height: 96vh; max-height: 850px; display: flex; flex-direction: column; }
     .qr-card-header { background: #0f172a; color: white; padding: 18px 20px; border-bottom: 1px solid var(--btn-border); }
     .qr-card-header h2 { font-size: 17px; font-weight: 600; }
     .store-details { background: #111c2e; padding: 14px 16px; border-bottom: 1px solid var(--btn-border); font-size: 13px; color: var(--text-muted); }
     .store-name { font-weight: 700; font-size: 15px; color: #f8fafc; margin-bottom: 4px; }
     .qr-info-bar { display: flex; justify-content: space-around; padding: 14px 16px; background: #162032; font-size: 14px; border-bottom: 1px dashed var(--btn-border); }
+    .qr-code-box { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; padding: 10px; overflow-y: auto; position: relative; }
     
-    .qr-code-box { 
-      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background: white; padding: 10px; overflow-y: auto; position: relative;
-    }
+    /* WAVE PULSE LOADING */
+    .loading-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; }
+    .wave-spinner { display: flex; justify-content: center; align-items: center; gap: 8px; height: 60px; margin-bottom: 15px; }
+    .wave-spinner div { width: 8px; height: 35px; background: #38bdf8; border-radius: 6px; animation: wavePulse 1s ease-in-out infinite; }
+    .wave-spinner div:nth-child(1) { animation-delay: -0.4s; background: #38bdf8; }
+    .wave-spinner div:nth-child(2) { animation-delay: -0.2s; background: #10b981; }
+    .wave-spinner div:nth-child(3) { animation-delay: 0s; background: #0284c7; }
+    @keyframes wavePulse { 0%, 100% { transform: scaleY(0.5); opacity: 0.5; } 50% { transform: scaleY(1.3); opacity: 1; } }
+    .loading-text { font-size: 15px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px;}
     
-    /* ------------------------------------------- */
-    /* PREMIUM EDC SPINNER (Glowing Laser Ring) */
-    /* ------------------------------------------- */
-    .loading-wrapper {
-      display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;
-    }
-    .premium-spinner {
-      position: relative; width: 60px; height: 60px; margin: 0 auto;
-    }
-    .premium-spinner::before, .premium-spinner::after {
-      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      border-radius: 50%; border: 4px solid transparent;
-    }
-    .premium-spinner::before {
-      border-top-color: #38bdf8; border-bottom-color: #38bdf8;
-      animation: spinPremium 1.2s cubic-bezier(0.42, 0, 0.58, 1) infinite;
-      box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
-    }
-    .premium-spinner::after {
-      border-left-color: #10b981; border-right-color: #10b981;
-      animation: spinPremium 1.2s cubic-bezier(0.42, 0, 0.58, 1) infinite reverse;
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
-      transform: scale(0.7);
-    }
-    @keyframes spinPremium {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .loading-text { font-size: 15px; font-weight: 600; color: var(--text-muted); margin-top: 25px; letter-spacing: 0.5px;}
-    
-    /* Content to Show after Loading */
     .qr-content { display: none; flex-direction: column; align-items: center; width: 100%; animation: fadeIn 0.4s ease-out; }
     .qr-img { width: 95%; max-width: 400px; height: auto; aspect-ratio: 1/1; border-radius: 12px; border: 4px solid #f1f5f9; padding: 8px; }
     .qr-price-display { margin-top: 15px; font-size: 34px; font-weight: 700; color: #0284c7; }
     
-    /* ปรับแต่งส่วนแสดงผลรูปสลิปให้พอดีจอ 100% */
     .slip-preview-container { margin-top: 5px; width: 100%; display: none; text-align: center; }
-    .slip-preview-img { 
-      width: auto; max-width: 95%; height: auto; 
-      max-height: 280px; 
-      border-radius: 12px; border: 4px solid #10b981; 
-      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25);
-      object-fit: contain;
-    }
+    .slip-preview-img { width: auto; max-width: 95%; height: auto; max-height: 280px; border-radius: 12px; border: 4px solid #10b981; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25); object-fit: contain; }
     .slip-price-display { margin-top: 8px; font-size: 28px; font-weight: 700; color: #10b981; }
 
     .qr-card-footer { margin-top: auto; padding: 16px; background: #0f172a; display: flex; gap: 10px; border-top: 1px solid var(--btn-border); }
@@ -316,12 +272,21 @@
 
     <div class="card">
       <form id="transferForm" onsubmit="event.preventDefault(); amountInput.blur(); triggerQR();">
+        
         <div class="section-label">
           <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22v-8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v8"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0v-7a3 3 0 0 0-3-3h-1"/><path d="M5 12V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v8"/></svg> เลขที่หน้าจ่าย</span>
-          <button type="button" class="btn-phone" id="btnPhoneIcon" onclick="openPhoneModal()" title="เบอร์โทรสมาชิก Blue Card">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-            <div class="phone-badge"></div>
-          </button>
+          
+          <div class="action-buttons-right">
+            <button type="button" class="btn-card-scan" id="btnCardIcon" onclick="openCardModal()" title="บัตรสมาชิก (16 หลัก) / สแกนบาร์โค้ด">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"></path><path d="M8 7v10"></path><path d="M12 7v10"></path><path d="M16 7v10"></path></svg>
+              <div class="card-badge" id="cardBadge"></div>
+            </button>
+            
+            <button type="button" class="btn-phone" id="btnPhoneIcon" onclick="openPhoneModal()" title="เบอร์โทรศัพท์ (10 หลัก)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <div class="phone-badge" id="phoneBadge"></div>
+            </button>
+          </div>
         </div>
 
         <div class="grid-pumps">
@@ -390,22 +355,66 @@
     <div id="recordList" class="record-list"></div>
   </div>
 
-  <!-- Phone Modal -->
-  <div id="phoneModal" class="modal-overlay">
-    <div class="modal-card" style="max-width: 320px;" id="phoneModalBodyBox">
-      <div class="phone-modal-body" id="phoneModalContent">
-        <h3>เบอร์โทรสมาชิกลูกค้า</h3>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">เบอร์นี้จะถูกแนบไปกับรายการที่กำลังบันทึก</p>
-        <input type="tel" id="memberPhoneInput" class="phone-input" placeholder="08X-XXX-XXXX" autofocus>
+  <!-- Scanner Live Camera Modal -->
+  <div id="liveScannerModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="scanner-header">
+        สแกนบาร์โค้ดบัตร 16 หลัก
+        <button onclick="closeLiveScanner()" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">✕</button>
+      </div>
+      <div class="scanner-body">
+        <video id="liveCameraVideo" class="scanner-video" playsinline autoplay></video>
+        <div class="scanner-overlay-box">
+          <div class="scanner-laser"></div>
+        </div>
+      </div>
+      <div class="scanner-footer">
+        <button class="btn-close-scanner" onclick="closeLiveScanner()">ยกเลิกสแกน</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phone Modal (10 Digits Only) -->
+  <div id="phoneModal" class="modal-overlay input-modal">
+    <div class="modal-card" id="phoneModalBodyBox">
+      <div class="input-modal-body" id="phoneModalContent">
+        <h3>เบอร์โทรศัพท์</h3>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">กรอกเบอร์โทรลูกค้า (10 หลัก)</p>
+        <input type="tel" id="memberPhoneInput" class="member-input" placeholder="08X-XXX-XXXX">
         <div class="action-btn-row">
-          <button type="button" class="btn-modal-close" id="btnCancelPhone" style="height:48px;" onclick="closePhoneModal()">ยกเลิก</button>
+          <button type="button" class="btn-modal-close" style="height:48px;" onclick="closePhoneModal()">ยกเลิก</button>
           <button type="button" class="btn-modal-save" style="height:48px;" onclick="savePhoneData()">ตกลง</button>
         </div>
       </div>
       
       <div id="phoneLoadingWrapper" class="loading-wrapper" style="display:none; padding: 40px 20px;">
-        <div class="premium-spinner"></div>
-        <div class="loading-text" style="color: white;">กำลังบันทึกเบอร์โทร...</div>
+        <div class="wave-spinner"><div></div><div></div><div></div></div>
+        <div class="loading-text" style="color: white; margin-top: 15px;">กำลังบันทึกเบอร์โทร...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card Modal (16 Digits + Scan Button) -->
+  <div id="cardModal" class="modal-overlay input-modal">
+    <div class="modal-card" id="cardModalBodyBox">
+      <div class="input-modal-body" id="cardModalContent">
+        <h3>บัตรสมาชิก Blue Card</h3>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">กรอกเลข 16 หลัก หรือกดปุ่มสแกนบาร์โค้ด</p>
+        <div class="input-row">
+          <input type="tel" id="memberCardInput" class="member-input" placeholder="เลข 16 หลัก">
+          <button type="button" class="btn-scan-inside" onclick="openLiveScanner()" title="เปิดกล้องสแกน">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"></path><path d="M8 7v10"></path><path d="M12 7v10"></path><path d="M16 7v10"></path></svg>
+          </button>
+        </div>
+        <div class="action-btn-row">
+          <button type="button" class="btn-modal-close" style="height:48px;" onclick="closeCardModal()">ยกเลิก</button>
+          <button type="button" class="btn-modal-save" style="height:48px;" onclick="saveCardData()">ตกลง</button>
+        </div>
+      </div>
+      
+      <div id="cardLoadingWrapper" class="loading-wrapper" style="display:none; padding: 40px 20px;">
+        <div class="wave-spinner"><div></div><div></div><div></div></div>
+        <div class="loading-text" style="color: white; margin-top: 15px;">กำลังบันทึกข้อมูลบัตร...</div>
       </div>
     </div>
   </div>
@@ -425,7 +434,7 @@
       
       <div class="qr-code-box">
         <div id="loadingWrapper" class="loading-wrapper">
-          <div class="premium-spinner"></div>
+          <div class="wave-spinner"><div></div><div></div><div></div></div>
           <div class="loading-text">กำลังสร้าง QR Code...</div>
         </div>
 
@@ -461,23 +470,28 @@
     let records = JSON.parse(localStorage.getItem('gas_station_transfers') || '[]');
     let selectedPumpNum = null;
     let selectedOil = null;
-    let currentPhone = "";
+    let currentMember = ""; 
     let currentSlipBase64 = null;
     let currentSlipFilename = "";
 
     const form = document.getElementById('transferForm');
     const amountInput = document.getElementById('amountInput');
     const clearBtn = document.getElementById('clearBtn');
+    
     const btnPhoneIcon = document.getElementById('btnPhoneIcon');
-    const memberPhoneInput = document.getElementById('memberPhoneInput');
+    const btnCardIcon = document.getElementById('btnCardIcon');
+    
     const phoneModal = document.getElementById('phoneModal');
+    const cardModal = document.getElementById('cardModal');
+    const memberPhoneInput = document.getElementById('memberPhoneInput');
+    const memberCardInput = document.getElementById('memberCardInput');
+    
     const qrModal = document.getElementById('qrModal');
     const recordList = document.getElementById('recordList');
     const pendingCount = document.getElementById('pendingCount');
     const totalAmount = document.getElementById('totalAmount');
     const toast = document.getElementById('toast');
     
-    // UI ควบคุม Loading และ QR
     const loadingWrapper = document.getElementById('loadingWrapper');
     const qrContentWrapper = document.getElementById('qrContentWrapper');
     const qrImage = document.getElementById('qrImage');
@@ -508,27 +522,16 @@
     }
 
     /* ----------------------------------------------------- */
-    /* การควบคุมช่องกรอกเบอร์โทรแบบ Auto-Focus เด็ดขาด */
+    /* 1. ส่วนควบคุมหน้าต่างเบอร์โทรศัพท์ (10 หลักล้วน)      */
     /* ----------------------------------------------------- */
     const phoneModalBodyBox = document.getElementById('phoneModalBodyBox');
     
-    // บังคับโฟกัสทันทีเมื่อแตะหน้าจอส่วนใดๆ ในหน้าต่างนี้ (ยกเว้นปุ่มยกเลิก/ตกลง)
     phoneModalBodyBox.addEventListener('touchstart', function(e) {
-      if (e.target.tagName !== 'BUTTON') {
-        e.preventDefault(); 
-        memberPhoneInput.focus();
-      }
+      if (e.target.tagName !== 'BUTTON') { e.preventDefault(); memberPhoneInput.focus(); }
     }, {passive: false});
 
-    // สำรองสำหรับบาง Browser 
-    phoneModal.addEventListener('click', function(e) {
-      if (e.target.tagName !== 'BUTTON') {
-        setTimeout(() => { memberPhoneInput.focus(); }, 10);
-      }
-    });
-
     function openPhoneModal() {
-      memberPhoneInput.value = currentPhone;
+      memberPhoneInput.value = currentMember.length === 10 ? currentMember : "";
       memberPhoneInput.style.color = '#38bdf8';
       memberPhoneInput.style.borderColor = 'var(--btn-border)';
       phoneModal.classList.add('active');
@@ -541,26 +544,18 @@
       let val = this.value.replace(/\D/g, ''); 
       this.value = val;
       if (val.length > 10) {
-        this.style.color = '#ef4444'; 
-        this.style.borderColor = '#ef4444';
-        showToast('⚠️ เบอร์โทรเกิน 10 หลัก');
+        this.style.color = '#ef4444'; this.style.borderColor = '#ef4444';
+        showToast('⚠️ เบอร์โทรต้องมีแค่ 10 หลัก');
       } else {
-        this.style.color = '#38bdf8'; 
-        this.style.borderColor = 'var(--btn-border)';
+        this.style.color = '#38bdf8'; this.style.borderColor = 'var(--btn-border)';
       }
     });
 
     function savePhoneData() {
       let val = memberPhoneInput.value.trim();
-      if (val.length > 0 && val.length < 10) {
-        showToast('⚠️ เบอร์โทรต้องครบ 10 หลัก');
-        memberPhoneInput.focus();
-        return;
-      }
-      if (val.length > 10) {
-        showToast('⚠️ เบอร์โทรเกิน 10 หลัก กรุณาแก้ไข');
-        memberPhoneInput.focus();
-        return;
+      if (val.length > 0 && val.length !== 10) {
+        showToast('⚠️ กรุณากรอกเบอร์โทรให้ครบ 10 หลัก');
+        memberPhoneInput.focus(); return;
       }
 
       memberPhoneInput.blur(); 
@@ -568,29 +563,161 @@
       document.getElementById('phoneLoadingWrapper').style.display = 'flex';
 
       setTimeout(() => {
-        currentPhone = val;
-        if(currentPhone.length === 10) {
-          btnPhoneIcon.classList.add('has-data');
-        } else {
-          btnPhoneIcon.classList.remove('has-data');
-        }
-        
+        currentMember = val;
+        updateMainButtonsUI();
         closePhoneModal();
-        
         setTimeout(() => {
           document.getElementById('phoneModalContent').style.display = 'block';
           document.getElementById('phoneLoadingWrapper').style.display = 'none';
         }, 300);
-
-      }, 1000);
+      }, 800);
     }
 
     memberPhoneInput.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') { 
-        e.preventDefault(); 
-        savePhoneData(); 
+      if (e.key === 'Enter') { e.preventDefault(); savePhoneData(); }
+    });
+
+
+    /* ----------------------------------------------------- */
+    /* 2. ส่วนควบคุมหน้าต่างบัตรสมาชิก (16 หลัก)            */
+    /* ----------------------------------------------------- */
+    const cardModalBodyBox = document.getElementById('cardModalBodyBox');
+    
+    cardModalBodyBox.addEventListener('touchstart', function(e) {
+      if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) { e.preventDefault(); memberCardInput.focus(); }
+    }, {passive: false});
+
+    function openCardModal() {
+      memberCardInput.value = currentMember.length === 16 ? currentMember : "";
+      memberCardInput.style.color = '#a78bfa';
+      memberCardInput.style.borderColor = 'var(--btn-border)';
+      cardModal.classList.add('active');
+      setTimeout(() => memberCardInput.focus(), 150);
+    }
+    
+    function closeCardModal() { cardModal.classList.remove('active'); }
+
+    memberCardInput.addEventListener('input', function(e) {
+      let val = this.value.replace(/\D/g, ''); 
+      this.value = val;
+      if (val.length > 16) {
+        this.style.color = '#ef4444'; this.style.borderColor = '#ef4444';
+        showToast('⚠️ จำนวนตัวเลขเกิน 16 หลัก');
+      } else {
+        this.style.color = '#a78bfa'; this.style.borderColor = 'var(--btn-border)';
       }
     });
+
+    function saveCardData() {
+      let val = memberCardInput.value.trim();
+      if (val.length > 0 && val.length !== 16) {
+        showToast('⚠️ บัตรสมาชิกต้องมี 16 หลักเป๊ะๆ');
+        memberCardInput.focus(); return;
+      }
+
+      memberCardInput.blur(); 
+      document.getElementById('cardModalContent').style.display = 'none';
+      document.getElementById('cardLoadingWrapper').style.display = 'flex';
+
+      setTimeout(() => {
+        currentMember = val;
+        updateMainButtonsUI();
+        closeCardModal();
+        setTimeout(() => {
+          document.getElementById('cardModalContent').style.display = 'block';
+          document.getElementById('cardLoadingWrapper').style.display = 'none';
+        }, 300);
+      }, 800);
+    }
+
+    memberCardInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); saveCardData(); }
+    });
+
+    function updateMainButtonsUI() {
+      btnPhoneIcon.classList.remove('has-data');
+      btnCardIcon.classList.remove('has-data');
+      
+      if(currentMember.length === 10) {
+        btnPhoneIcon.classList.add('has-data');
+      } else if (currentMember.length === 16) {
+        btnCardIcon.classList.add('has-data');
+      }
+    }
+
+
+    /* ----------------------------------------------------- */
+    /* 3. ส่วนของ Live Barcode Scanner (เรียลไทม์)          */
+    /* ----------------------------------------------------- */
+    let liveStream = null;
+    let scanInterval = null;
+    const liveScannerModal = document.getElementById('liveScannerModal');
+    const videoEl = document.getElementById('liveCameraVideo');
+
+    async function openLiveScanner() {
+      // ตรวจสอบความปลอดภัย ถ้าเปิดจากไฟล์ในเครื่อง จะเตือนให้ไปใช้บน GitHub
+      if (!window.isSecureContext) {
+         showToast('❌ ระบบกล้องต้องการความปลอดภัยระดับ HTTPS (อัปโหลดเว็บขึ้น GitHub แล้วจะใช้งานได้ 100% ครับ)');
+         return;
+      }
+      if (!('BarcodeDetector' in window)) {
+        showToast('❌ มือถือเครื่องนี้ไม่รองรับระบบสแกนสดผ่านเว็บ กรุณาพิมพ์เลข 16 หลักแทน');
+        return;
+      }
+      
+      liveScannerModal.classList.add('active');
+      
+      try {
+        liveStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        videoEl.srcObject = liveStream;
+        const barcodeDetector = new BarcodeDetector({ formats: ['code_128', 'code_39', 'ean_13', 'qr_code'] });
+        
+        scanInterval = setInterval(async () => {
+          try {
+            const barcodes = await barcodeDetector.detect(videoEl);
+            if (barcodes.length > 0) {
+              let val = barcodes[0].rawValue.replace(/\D/g, ''); 
+              if (val.length >= 16) {
+                val = val.substring(0, 16); 
+                handleSuccessfulLiveScan(val);
+              }
+            }
+          } catch(e) {}
+        }, 500);
+
+      } catch (err) {
+        showToast('❌ ไม่สามารถเปิดกล้องได้ กรุณาอนุญาตให้สิทธิ์การใช้กล้อง');
+        closeLiveScanner();
+      }
+    }
+
+    function closeLiveScanner() {
+      if(scanInterval) clearInterval(scanInterval);
+      if(liveStream) liveStream.getTracks().forEach(track => track.stop());
+      liveScannerModal.classList.remove('active');
+    }
+
+    function handleSuccessfulLiveScan(val) {
+      closeLiveScanner();
+      
+      document.getElementById('cardModalContent').style.display = 'none';
+      document.getElementById('cardLoadingWrapper').style.display = 'flex';
+      
+      setTimeout(() => {
+        currentMember = val;
+        updateMainButtonsUI();
+        
+        closeCardModal(); 
+        showToast('✅ สแกนสำเร็จและบันทึกอัตโนมัติ!');
+        
+        setTimeout(() => {
+          document.getElementById('cardModalContent').style.display = 'block';
+          document.getElementById('cardLoadingWrapper').style.display = 'none';
+        }, 300);
+      }, 800);
+    }
+
+    /* ----------------------------------------------------- */
 
     function toggleClearBtn() {
       if (amountInput.value.length > 0) clearBtn.classList.add('show');
@@ -702,11 +829,9 @@
           
           currentSlipBase64 = canvas.toDataURL('image/jpeg', 0.7);
           
-          // ซ่อน QR โค้ด และยอดเงินที่อยู่ใต้ QR
           qrImage.style.display = 'none';
           modalPrice.style.display = 'none';
           
-          // แสดงรูปสลิป พร้อมยอดโอนสีเขียว
           document.getElementById('slipPreviewContainer').style.display = 'block';
           document.getElementById('slipPreviewImg').src = currentSlipBase64;
           slipPriceDisplay.textContent = `฿${parseFloat(amountInput.value).toLocaleString()}`;
@@ -730,7 +855,7 @@
         pump: 'หน้าจ่าย ' + selectedPumpNum,
         oilType: selectedOil,
         amount: amount,
-        phone: currentPhone,
+        phone: currentMember,
         date: now.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }),
         time: now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
         cleared: false,
@@ -751,8 +876,10 @@
       records.unshift(newRecord);
       saveToStorage();
 
-      clearAmount(false); currentSlipBase64 = null; currentSlipFilename = ""; currentPhone = "";
-      memberPhoneInput.value = ""; btnPhoneIcon.classList.remove('has-data');
+      clearAmount(false); currentSlipBase64 = null; currentSlipFilename = ""; currentMember = "";
+      memberPhoneInput.value = ""; memberCardInput.value = "";
+      updateMainButtonsUI();
+      
       showSuccessAnimation();
     }
 
@@ -766,7 +893,7 @@
       if (!item) return;
       records = records.map(r => r.id === id ? { ...r, lineSent: true } : r);
       saveToStorage();
-      let phoneText = item.phone ? `\n📞 สมาชิก: ${item.phone}` : '';
+      let phoneText = item.phone ? `\n👤 ข้อมูลสมาชิก: ${item.phone}` : '';
       let message = `⛽ [แจ้งยอดโอน]\n📍 ${item.pump}\n🛢️ น้ำมัน: ${item.oilType}\n💰 ยอดเงิน: ${item.amount.toLocaleString()} บาท${phoneText}\n📅 วันที่: ${item.date}\n🕒 เวลา: ${item.time}`;
       window.open(`https://line.me/R/msg/text/?${encodeURIComponent(message)}`, '_blank');
     }
@@ -799,7 +926,7 @@
     function exportCSV() {
       if (records.length === 0) { showToast('ไม่มีข้อมูลให้ Export'); return; }
       let csvContent = "\uFEFF"; 
-      csvContent += "วันที่,เวลา,หน้าจ่าย,ชนิดน้ำมัน,จำนวนเงิน (บาท),เบอร์สมาชิก,สถานะการแจ้ง,การส่งLINE,รูปสลิป\n";
+      csvContent += "วันที่,เวลา,หน้าจ่าย,ชนิดน้ำมัน,จำนวนเงิน (บาท),ข้อมูลสมาชิก,สถานะการแจ้ง,การส่งLINE,รูปสลิป\n";
 
       let totalAmt = 0; let sumG95 = 0, sumE20 = 0, sumB7 = 0;
       records.forEach(item => {
@@ -850,7 +977,15 @@
         const lineClass = item.lineSent ? 'btn-line sent' : 'btn-line';
 
         const slipTag = item.slipImage ? `<span class="tag tag-slip">📎 สลิป</span>` : '';
-        const phoneTag = item.phone ? `<span class="tag tag-phone">📞 ${item.phone}</span>` : '';
+        
+        let phoneTag = '';
+        if(item.phone) {
+           if(item.phone.length === 16) {
+              phoneTag = `<span class="tag tag-card">💳 ${item.phone}</span>`;
+           } else {
+              phoneTag = `<span class="tag tag-phone">📞 ${item.phone}</span>`;
+           }
+        }
 
         const itemEl = document.createElement('div');
         itemEl.className = `record-item ${item.cleared ? 'cleared' : 'pending'}`;
