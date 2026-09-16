@@ -38,7 +38,6 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; }
-    /* ปรับสมดุลขอบจอให้พอดี ไม่เบียดขอบจนเกินไป */
     body { background-color: var(--bg); color: var(--text); padding: 12px; padding-bottom: 90px; }
     .container { max-width: 480px; margin: 0 auto; }
     
@@ -79,7 +78,6 @@
     .phone-badge { position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; background: #22c55e; border-radius: 50%; display: none; }
     .btn-phone.has-data .phone-badge { display: block; }
 
-    /* ปรับสมดุลปุ่มหน้าจ่ายและน้ำมัน ให้มีระยะห่างสบายตา */
     .grid-pumps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
     .grid-pump-btn { background: var(--btn-bg); color: #cbd5e1; border: 1px solid var(--btn-border); height: 50px; border-radius: 12px; font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
     .grid-pump-btn:active { transform: scale(0.92); }
@@ -126,8 +124,11 @@
     .record-item.cleared::before { background: var(--success); }
     .record-item.cleared { opacity: 0.65; }
     
-    .record-top { display: flex; justify-content: space-between; align-items: center; padding-left: 6px; }
-    .tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    /* ปรับแต่งส่วนบนของรายการ ให้ขึ้นบรรทัดใหม่เมื่อเบอร์ยาวเกินไป */
+    .record-top { display: flex; justify-content: space-between; align-items: flex-start; padding-left: 6px; gap: 10px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; flex: 1; }
+    .amount { font-size: 22px; font-weight: 700; color: #f8fafc; white-space: nowrap; flex-shrink: 0; line-height: 1; margin-top: 4px; }
+    
     .tag { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }
     .tag-pump { background: #0f172a; color: #94a3b8; border: 1px solid var(--btn-border); }
     .tag-gas95 { background: rgba(249, 115, 22, 0.15); color: var(--g95); border: 1px solid rgba(249, 115, 22, 0.3); }
@@ -136,7 +137,6 @@
     .tag-slip { background: rgba(254, 240, 138, 0.15); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.3); display: flex; align-items: center; gap: 4px; }
     .tag-phone { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); display: flex; align-items: center; gap: 4px; }
     .tag-card { background: rgba(139, 92, 246, 0.15); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3); display: flex; align-items: center; gap: 4px; }
-    .amount { font-size: 22px; font-weight: 700; color: #f8fafc; }
     
     .record-bottom { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); border-top: 1px dashed var(--btn-border); padding-top: 12px; margin-left: 6px; }
     .record-actions { display: flex; gap: 8px; align-items: center; }
@@ -155,7 +155,8 @@
     .modal-card { background: var(--card-bg); border-radius: 24px; overflow: hidden; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.8); border: 1px solid var(--btn-border); transform: scale(0.9); transition: transform 0.3s; }
     .modal-overlay.active .modal-card { transform: scale(1); }
 
-    /* Scanner Live Modal */
+    /* Scanner Live Modal: ตั้งค่า Z-index ให้ซ้อนทับกรอบอื่นๆ มิดชิด */
+    #liveScannerModal { z-index: 1500 !important; }
     #liveScannerModal .modal-card { width: 100%; max-width: 400px; background: #0b1120; border-color: #8b5cf6; }
     .scanner-header { padding: 16px; background: #1e293b; font-size: 16px; font-weight: 700; color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--btn-border); }
     .scanner-body { position: relative; width: 100%; aspect-ratio: 4/3; background: black; overflow: hidden; }
@@ -173,14 +174,10 @@
     .input-modal-body { padding: 28px 20px; }
     .input-modal-body h3 { color: white; margin-bottom: 8px; font-size: 18px; }
     
-    /* แก้ไขระยะห่างระหว่างช่องกรอกและปุ่มให้ออกห่างกันสบายตา */
     .input-row { display: flex; gap: 8px; margin-bottom: 24px; }
     .member-input { flex: 1; height: 60px; background: #090e17; border: 2px solid var(--btn-border); border-radius: 14px; font-size: 24px; text-align: center; outline: none; letter-spacing: 2px; transition: all 0.3s; margin-bottom: 24px;}
-    
-    /* กรณีซ่อน margin ถ้าอยู่ใน row เดียวกับปุ่มสแกน */
     .input-row .member-input { margin-bottom: 0; }
 
-    /* Specific Colors */
     #memberPhoneInput { color: #38bdf8; }
     #memberPhoneInput:focus { border-color: #38bdf8; }
     #memberCardInput { color: #a78bfa; font-size: 18px; }
@@ -316,7 +313,8 @@
 
         <div class="amount-wrapper">
           <input type="number" inputmode="decimal" id="amountInput" class="amount-input" placeholder="0" min="1" step="any" required oninput="toggleClearBtn()">
-          <button type="button" id="clearBtn" class="btn-clear-input" onclick="clearAmount(true)">
+          <!-- แก้ไขบรรทัดนี้: ใส่ false ให้เวลาล้างยอดเงินแล้วคีย์บอร์ดไม่เด้งขึ้นมา -->
+          <button type="button" id="clearBtn" class="btn-clear-input" onclick="clearAmount(false)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
@@ -376,7 +374,7 @@
 
   <!-- Phone Modal (10 Digits Only) -->
   <div id="phoneModal" class="modal-overlay input-modal">
-    <div class="modal-card" id="phoneModalBodyBox">
+    <div class="modal-card">
       <div class="input-modal-body" id="phoneModalContent">
         <h3>เบอร์โทรศัพท์</h3>
         <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">กรอกเบอร์โทรลูกค้า (10 หลัก)</p>
@@ -396,7 +394,7 @@
 
   <!-- Card Modal (16 Digits + Scan Button) -->
   <div id="cardModal" class="modal-overlay input-modal">
-    <div class="modal-card" id="cardModalBodyBox">
+    <div class="modal-card">
       <div class="input-modal-body" id="cardModalContent">
         <h3>บัตรสมาชิก Blue Card</h3>
         <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">กรอกเลข 16 หลัก หรือกดปุ่มสแกนบาร์โค้ด</p>
@@ -522,13 +520,25 @@
     }
 
     /* ----------------------------------------------------- */
-    /* 1. ส่วนควบคุมหน้าต่างเบอร์โทรศัพท์ (10 หลักล้วน)      */
+    /* 1. ล็อกคีย์บอร์ด 100% สำหรับช่องเบอร์โทร และ บัตรสมาชิก   */
     /* ----------------------------------------------------- */
-    const phoneModalBodyBox = document.getElementById('phoneModalBodyBox');
     
-    phoneModalBodyBox.addEventListener('touchstart', function(e) {
-      if (e.target.tagName !== 'BUTTON') { e.preventDefault(); memberPhoneInput.focus(); }
-    }, {passive: false});
+    function preventKeyboardHide(modalElement, inputElement) {
+      modalElement.addEventListener('touchstart', function(e) {
+        // ถ้านิ้วจิ้มโดนพื้นที่อื่น ที่ไม่ใช่ช่องกรอก และไม่ใช่ปุ่ม ให้ป้องกันการทัช (คีย์บอร์ดจะไม่หดลง)
+        if (e.target !== inputElement && !e.target.closest('button') && !e.target.closest('input')) {
+          e.preventDefault(); 
+        }
+      }, {passive: false});
+    }
+
+    preventKeyboardHide(phoneModal, memberPhoneInput);
+    preventKeyboardHide(cardModal, memberCardInput);
+
+
+    /* ----------------------------------------------------- */
+    /* 2. ส่วนควบคุมหน้าต่างเบอร์โทรศัพท์ (10 หลักล้วน)        */
+    /* ----------------------------------------------------- */
 
     function openPhoneModal() {
       memberPhoneInput.value = currentMember.length === 10 ? currentMember : "";
@@ -577,15 +587,9 @@
       if (e.key === 'Enter') { e.preventDefault(); savePhoneData(); }
     });
 
-
     /* ----------------------------------------------------- */
-    /* 2. ส่วนควบคุมหน้าต่างบัตรสมาชิก (16 หลัก)            */
+    /* 3. ส่วนควบคุมหน้าต่างบัตรสมาชิก (16 หลัก)              */
     /* ----------------------------------------------------- */
-    const cardModalBodyBox = document.getElementById('cardModalBodyBox');
-    
-    cardModalBodyBox.addEventListener('touchstart', function(e) {
-      if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) { e.preventDefault(); memberCardInput.focus(); }
-    }, {passive: false});
 
     function openCardModal() {
       memberCardInput.value = currentMember.length === 16 ? currentMember : "";
@@ -645,9 +649,8 @@
       }
     }
 
-
     /* ----------------------------------------------------- */
-    /* 3. ส่วนของ Live Barcode Scanner (เรียลไทม์)          */
+    /* 4. ส่วนของ Live Barcode Scanner (เรียลไทม์)           */
     /* ----------------------------------------------------- */
     let liveStream = null;
     let scanInterval = null;
@@ -655,14 +658,11 @@
     const videoEl = document.getElementById('liveCameraVideo');
 
     async function openLiveScanner() {
-      // ตรวจสอบความปลอดภัย ถ้าเปิดจากไฟล์ในเครื่อง จะเตือนให้ไปใช้บน GitHub
       if (!window.isSecureContext) {
-         showToast('❌ ระบบกล้องต้องการความปลอดภัยระดับ HTTPS (อัปโหลดเว็บขึ้น GitHub แล้วจะใช้งานได้ 100% ครับ)');
-         return;
+         showToast('❌ ระบบกล้องต้องการความปลอดภัยระดับ HTTPS (ใช้บน GitHub)'); return;
       }
       if (!('BarcodeDetector' in window)) {
-        showToast('❌ มือถือเครื่องนี้ไม่รองรับระบบสแกนสดผ่านเว็บ กรุณาพิมพ์เลข 16 หลักแทน');
-        return;
+        showToast('❌ มือถือเครื่องนี้ไม่รองรับระบบสแกนสดผ่านเว็บ กรุณาพิมพ์เลข 16 หลักแทน'); return;
       }
       
       liveScannerModal.classList.add('active');
@@ -686,7 +686,7 @@
         }, 500);
 
       } catch (err) {
-        showToast('❌ ไม่สามารถเปิดกล้องได้ กรุณาอนุญาตให้สิทธิ์การใช้กล้อง');
+        showToast('❌ ไม่สามารถเปิดกล้องได้');
         closeLiveScanner();
       }
     }
@@ -699,14 +699,12 @@
 
     function handleSuccessfulLiveScan(val) {
       closeLiveScanner();
-      
       document.getElementById('cardModalContent').style.display = 'none';
       document.getElementById('cardLoadingWrapper').style.display = 'flex';
       
       setTimeout(() => {
         currentMember = val;
         updateMainButtonsUI();
-        
         closeCardModal(); 
         showToast('✅ สแกนสำเร็จและบันทึกอัตโนมัติ!');
         
@@ -723,10 +721,13 @@
       if (amountInput.value.length > 0) clearBtn.classList.add('show');
       else clearBtn.classList.remove('show');
     }
+    
+    // แก้ไขตามที่ขอ: ล้างยอดเงินเสร็จแล้ว คีย์บอร์ดจะไม่เด้งขึ้นมาอัตโนมัติ
     function clearAmount(shouldFocus = false) {
       amountInput.value = ''; toggleClearBtn();
       if(shouldFocus) amountInput.focus();
     }
+    
     function addAmount(val) { 
       amountInput.value = (parseFloat(amountInput.value) || 0) + val; toggleClearBtn();
     }
@@ -991,7 +992,12 @@
         itemEl.className = `record-item ${item.cleared ? 'cleared' : 'pending'}`;
         itemEl.innerHTML = `
           <div class="record-top">
-            <div class="tags"><span class="tag tag-pump">${item.pump}</span><span class="tag ${oilClass}">${item.oilType}</span>${slipTag}${phoneTag}</div>
+            <div class="tags">
+              <span class="tag tag-pump">${item.pump}</span>
+              <span class="tag ${oilClass}">${item.oilType}</span>
+              ${slipTag}
+              ${phoneTag}
+            </div>
             <div class="amount">฿${item.amount.toLocaleString()}</div>
           </div>
           <div class="record-bottom">
