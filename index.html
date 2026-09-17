@@ -10,348 +10,421 @@
   
   <title>ระบบบันทึกโอนเงินหน้าลาน - EDC Premium</title>
   <link rel="manifest" href="manifest.json">
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <style>
+    /* ========================================= */
+    /* 1. THEME VARIABLES (ระบบกลางวัน/กลางคืน)    */
+    /* ========================================= */
     :root {
+      /* Dark Theme (Default) */
       --bg: #0b1120;
       --card-bg: #162032;
-      --btn-bg: #223049;
-      --btn-border: #2d3f5d;
+      --btn-bg: #1e293b;
+      --btn-border: #334155;
       --text: #f8fafc;
-      --text-muted: #8496b0;
+      --text-muted: #94a3b8;
       
-      --pump-active-start: #7dd3fc;
-      --pump-active-end: #0ea5e9;
+      --pump-active-start: #38bdf8;
+      --pump-active-end: #0284c7;
       
-      --g95: #ea580c;
+      --g95: #f97316;
       --e20: #10b981;
-      --b7: #2563eb;
+      --b7: #3b82f6;
       --success: #10b981;
       --warning: #f59e0b;
       --danger: #ef4444;
       --excel: #107c41;
-      --radius: 18px;
+      --radius: 20px;
+    }
+
+    /* Light Theme (Override) */
+    body.light-mode {
+      --bg: #f1f5f9;
+      --card-bg: #ffffff;
+      --btn-bg: #f8fafc;
+      --btn-border: #cbd5e1;
+      --text: #0f172a;
+      --text-muted: #64748b;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg); color: var(--text); padding: 12px; padding-bottom: 90px; }
-    .container { max-width: 480px; margin: 0 auto; }
+    body { background-color: var(--bg); color: var(--text); overflow-x: hidden; transition: background-color 0.3s, color 0.3s; }
     
+    /* ควบคุมความฟิตของหน้าจอ ให้พอดี ไม่เบียด */
+    .container { max-width: 480px; margin: 0 auto; height: 100vh; display: flex; flex-direction: column; padding-bottom: 75px; }
+
     @keyframes slideDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes popIn { 0% { opacity: 0; transform: scale(0.9); } 70% { transform: scale(1.03); } 100% { opacity: 1; transform: scale(1); } }
-    @keyframes popCheck { 0% { transform: scale(0) rotate(-45deg); } 100% { transform: scale(1) rotate(0); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    .header { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; padding: 18px 16px; border-radius: var(--radius); border: 1px solid var(--btn-border); box-shadow: 0 10px 25px rgba(0,0,0,0.5); margin-bottom: 14px; position: relative; overflow: hidden; animation: slideDown 0.4s ease-out; }
-    .header::after { content: ''; position: absolute; width: 140px; height: 140px; background: rgba(59, 130, 246, 0.08); border-radius: 50%; top: -40px; right: -40px; }
-    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; position: relative; z-index: 2; }
-    .header-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.1); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; border: 1px solid rgba(255,255,255,0.15); }
-    .promptpay-id { font-size: 11px; font-weight: 500; color: #93c5fd; background: rgba(15, 23, 42, 0.6); padding: 4px 10px; border-radius: 8px; border: 1px solid #1e3a8a; }
-    .header h1 { font-size: 20px; font-weight: 700; line-height: 1.3; position: relative; z-index: 2; }
-    
-    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; animation: slideDown 0.5s ease-out; }
-    .summary-card { background: var(--card-bg); padding: 14px; border-radius: var(--radius); box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; border: 1px solid var(--btn-border); }
-    .summary-title { font-size: 12px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
-    .summary-value { font-size: 20px; font-weight: 700; margin-top: 5px; }
-    .summary-value.highlight { color: var(--warning); }
-    .summary-value.total { color: #38bdf8; }
-    
-    .card { background: var(--card-bg); border-radius: var(--radius); padding: 18px 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); margin-bottom: 20px; border: 1px solid var(--btn-border); animation: slideDown 0.6s ease-out; }
-    .section-label { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; }
-    .section-label span { display: flex; align-items: center; gap: 6px; }
+    /* ระบบสลับหน้าจอ */
+    .view-section { display: none; animation: fadeIn 0.3s ease-out; flex: 1; overflow-y: auto; padding: 12px; }
+    .view-section.active { display: block; }
 
-    .action-buttons-right { display: flex; gap: 14px; align-items: center; }
+    /* ========================================= */
+    /* 2. HEADER สวยงาม (เฉพาะหน้าแรก)            */
+    /* ========================================= */
+    .header {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: white; padding: 22px 18px; border-radius: var(--radius);
+      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3); margin-bottom: 16px;
+      position: relative; overflow: hidden; display: flex; justify-content: space-between; align-items: center;
+    }
+    .header::before { content: ''; position: absolute; width: 150px; height: 150px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; top: -50px; right: -50px; }
+    .header-info h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; position: relative; z-index: 2; line-height: 1.2; text-shadow: 0 2px 4px rgba(0,0,0,0.2);}
+    .header-info p { font-size: 12px; font-weight: 500; color: #e0f2fe; position: relative; z-index: 2; }
     
-    .btn-card-scan { width: 40px; height: 40px; border-radius: 12px; background: var(--btn-bg); border: 1px solid var(--btn-border); color: #a78bfa; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; position: relative; }
-    .btn-card-scan.has-data { color: white; border-color: #8b5cf6; background: rgba(139, 92, 246, 0.8); box-shadow: 0 0 12px rgba(139, 92, 246, 0.5); }
-    .btn-card-scan:active { transform: scale(0.9); }
-    .card-badge { position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; background: #22c55e; border-radius: 50%; display: none; }
-    .btn-card-scan.has-data .card-badge { display: block; }
+    /* ปุ่มสลับธีม */
+    .btn-theme {
+      width: 44px; height: 44px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.4);
+      display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; position: relative; z-index: 2; backdrop-filter: blur(4px); transition: 0.3s;
+    }
+    .btn-theme:active { transform: scale(0.9); }
 
-    .btn-phone { width: 40px; height: 40px; border-radius: 12px; background: var(--btn-bg); border: 1px solid var(--btn-border); color: #38bdf8; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; position: relative; }
-    .btn-phone.has-data { color: white; border-color: #0284c7; background: rgba(2, 132, 199, 0.8); box-shadow: 0 0 12px rgba(56, 189, 248, 0.5); }
-    .btn-phone:active { transform: scale(0.9); }
-    .phone-badge { position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; background: #22c55e; border-radius: 50%; display: none; }
-    .btn-phone.has-data .phone-badge { display: block; }
+    /* ========================================= */
+    /* 3. MAIN CARD (พื้นที่บันทึกยอด)              */
+    /* ========================================= */
+    .card { background: var(--card-bg); border-radius: var(--radius); padding: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); border: 1px solid var(--btn-border); transition: background-color 0.3s, border-color 0.3s; }
+    
+    .section-label { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 14px; }
+    
+    /* ปุ่มบัตร/เบอร์โทร */
+    .action-buttons-right { display: flex; gap: 12px; align-items: center; }
+    .btn-card-scan { width: 44px; height: 44px; border-radius: 12px; background: var(--btn-bg); border: 1px solid var(--btn-border); color: #a78bfa; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; position: relative; }
+    .btn-card-scan.has-data { color: white; border-color: #8b5cf6; background: rgba(139, 92, 246, 0.9); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); }
+    .btn-phone { width: 44px; height: 44px; border-radius: 12px; background: var(--btn-bg); border: 1px solid var(--btn-border); color: #38bdf8; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; position: relative; }
+    .btn-phone.has-data { color: white; border-color: #0284c7; background: rgba(2, 132, 199, 0.9); box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); }
+    .btn-card-scan:active, .btn-phone:active { transform: scale(0.9); }
+    .status-dot { position: absolute; top: -3px; right: -3px; width: 12px; height: 12px; background: #22c55e; border-radius: 50%; display: none; border: 2px solid var(--card-bg); }
+    .has-data .status-dot { display: block; }
 
+    /* ปุ่มกริด หน้าจ่าย & น้ำมัน */
     .grid-pumps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
-    .grid-pump-btn { background: var(--btn-bg); color: #cbd5e1; border: 1px solid var(--btn-border); height: 50px; border-radius: 12px; font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
-    .grid-pump-btn:active { transform: scale(0.92); }
+    .grid-pump-btn { background: var(--btn-bg); color: var(--text); border: 1px solid var(--btn-border); height: 52px; border-radius: 14px; font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+    .grid-pump-btn.active { background: linear-gradient(135deg, var(--pump-active-start), var(--pump-active-end)); color: #ffffff; border-color: #bae6fd; box-shadow: 0 6px 15px rgba(14, 165, 233, 0.35); transform: translateY(-2px); }
     
-    .grid-oils { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 22px; }
-    .grid-oil-btn { background: var(--btn-bg); color: #cbd5e1; border: 1px solid var(--btn-border); height: 50px; border-radius: 12px; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
-    .grid-oil-btn.disabled { opacity: 0.2; pointer-events: none; filter: grayscale(100%); background: #0f172a; border-color: transparent;}
+    .grid-oils { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
+    .grid-oil-btn { background: var(--btn-bg); color: var(--text); border: 1px solid var(--btn-border); height: 52px; border-radius: 14px; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+    .grid-oil-btn.disabled { opacity: 0.2; pointer-events: none; filter: grayscale(100%); }
+    .grid-oil-btn.g95.active { background: linear-gradient(135deg, #fb923c, #ea580c); color: #ffffff; border-color: #fdba74; box-shadow: 0 6px 15px rgba(234, 88, 12, 0.35); transform: translateY(-2px); }
+    .grid-oil-btn.e20.active { background: linear-gradient(135deg, #34d399, #10b981); color: #ffffff; border-color: #6ee7b7; box-shadow: 0 6px 15px rgba(16, 185, 129, 0.35); transform: translateY(-2px); }
+    .grid-oil-btn.b7.active { background: linear-gradient(135deg, #60a5fa, #2563eb); color: #ffffff; border-color: #93c5fd; box-shadow: 0 6px 15px rgba(37, 99, 235, 0.35); transform: translateY(-2px); }
 
-    .grid-pump-btn.active { background: linear-gradient(135deg, var(--pump-active-start), var(--pump-active-end)); color: #ffffff; border: 1px solid #bae6fd; box-shadow: inset 0 3px 5px rgba(255, 255, 255, 0.5), 0 5px 15px rgba(14, 165, 233, 0.4); text-shadow: 0 1px 2px rgba(0,0,0,0.3); transform: translateY(-2px); }
-    .grid-oil-btn.g95.active { background: linear-gradient(135deg, #fb923c, #ea580c); color: #ffffff; border: 1px solid #fdba74; box-shadow: inset 0 3px 5px rgba(255, 255, 255, 0.5), inset 0 -3px 5px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(234, 88, 12, 0.4); text-shadow: 0 1px 2px rgba(0,0,0,0.3); transform: translateY(-2px); }
-    .grid-oil-btn.e20.active { background: linear-gradient(135deg, #34d399, #10b981); color: #ffffff; border: 1px solid #6ee7b7; box-shadow: inset 0 3px 5px rgba(255, 255, 255, 0.5), inset 0 -3px 5px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(16, 185, 129, 0.4); text-shadow: 0 1px 2px rgba(0,0,0,0.3); transform: translateY(-2px); }
-    .grid-oil-btn.b7.active { background: linear-gradient(135deg, #60a5fa, #2563eb); color: #ffffff; border: 1px solid #93c5fd; box-shadow: inset 0 3px 5px rgba(255, 255, 255, 0.5), inset 0 -3px 5px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(37, 99, 235, 0.4); text-shadow: 0 1px 2px rgba(0,0,0,0.3); transform: translateY(-2px); }
-
+    /* ช่องใส่ยอดเงิน */
     .amount-wrapper { position: relative; display: flex; align-items: center; margin-bottom: 16px; }
-    .amount-input { width: 100%; height: 68px; background: #090e17; border: 2px solid var(--btn-border); border-radius: 14px; font-size: 32px !important; font-weight: 700 !important; color: #38bdf8 !important; text-align: center; outline: none; transition: all 0.3s; padding-left: 48px; padding-right: 48px; }
-    .amount-input:focus { border-color: #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.25); }
+    .amount-input { 
+      width: 100%; height: 68px; background: var(--btn-bg); border: 2px solid var(--btn-border); border-radius: 16px; 
+      font-size: 36px !important; font-weight: 700 !important; color: #0284c7 !important; text-align: center; outline: none; transition: 0.3s; padding: 0 50px; 
+    }
+    .amount-input:focus { border-color: #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); }
+    body.light-mode .amount-input { background: #ffffff; }
     
-    .btn-clear-input { position: absolute; right: 14px; width: 30px; height: 30px; background: #223049; color: #94a3b8; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; opacity: 0; pointer-events: none; }
+    .btn-clear-input { position: absolute; right: 14px; width: 34px; height: 34px; background: #e2e8f0; color: #475569; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; cursor: pointer; opacity: 0; pointer-events: none; transition: 0.2s; }
     .btn-clear-input.show { opacity: 1; pointer-events: auto; }
-    .btn-clear-input:active { transform: scale(0.85); background: #334155; color: white; }
+    .btn-clear-input:active { transform: scale(0.85); background: #cbd5e1; }
+    body:not(.light-mode) .btn-clear-input { background: #334155; color: white; }
     
-    .quick-amount { display: flex; gap: 8px; margin-bottom: 22px; }
-    .quick-btn { flex: 1; padding: 10px 0; font-size: 13px; font-weight: 600; background: var(--btn-bg); border: 1px solid var(--btn-border); border-radius: 10px; color: #cbd5e1; cursor: pointer; transition: all 0.2s; }
-    .quick-btn:hover { border-color: #38bdf8; color: #38bdf8; }
-    .quick-btn:active { transform: scale(0.92); }
+    /* ปุ่มลัดยอดเงิน (เปลี่ยนตามคำขอ) */
+    .quick-amount { display: flex; gap: 8px; margin-bottom: 24px; }
+    .quick-btn { flex: 1; padding: 12px 0; font-size: 14px; font-weight: 600; background: var(--btn-bg); border: 1px solid var(--btn-border); border-radius: 12px; color: var(--text); cursor: pointer; transition: 0.2s; }
+    .quick-btn:active { transform: scale(0.92); border-color: #38bdf8; color: #38bdf8; }
     
-    .action-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .btn-qr-show, .btn-submit { height: 56px; border: none; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: white; transition: all 0.2s; }
+    .action-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .btn-qr-show, .btn-submit { height: 60px; border: none; border-radius: 16px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: white; transition: 0.2s; }
     .btn-qr-show { background: linear-gradient(135deg, #0284c7, #2563eb); box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3); }
     .btn-submit { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); }
     .btn-qr-show:active, .btn-submit:active { transform: scale(0.95); box-shadow: none; }
-    
-    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 0 4px; }
-    .section-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: #cbd5e1; }
-    .header-actions { display: flex; gap: 8px; }
-    .btn-export, .btn-reset { padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
-    .btn-export { background: var(--excel); color: white; box-shadow: 0 4px 10px rgba(16, 124, 65, 0.3); }
-    .btn-reset { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-    
-    .record-list { display: flex; flex-direction: column; gap: 12px; }
-    .record-item { background: var(--card-bg); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 1px solid var(--btn-border); position: relative; overflow: hidden; animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    .record-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; }
-    .record-item.pending::before { background: var(--warning); }
-    .record-item.cleared::before { background: var(--success); }
-    .record-item.cleared { opacity: 0.65; }
-    
-    /* ปรับแต่งส่วนบนของรายการ ให้ขึ้นบรรทัดใหม่เมื่อเบอร์ยาวเกินไป */
-    .record-top { display: flex; justify-content: space-between; align-items: flex-start; padding-left: 6px; gap: 10px; }
-    .tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; flex: 1; }
-    .amount { font-size: 22px; font-weight: 700; color: #f8fafc; white-space: nowrap; flex-shrink: 0; line-height: 1; margin-top: 4px; }
-    
-    .tag { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }
-    .tag-pump { background: #0f172a; color: #94a3b8; border: 1px solid var(--btn-border); }
-    .tag-gas95 { background: rgba(249, 115, 22, 0.15); color: var(--g95); border: 1px solid rgba(249, 115, 22, 0.3); }
-    .tag-e20 { background: rgba(16, 185, 129, 0.15); color: var(--e20); border: 1px solid rgba(16, 185, 129, 0.3); }
-    .tag-b7 { background: rgba(59, 130, 246, 0.15); color: var(--b7); border: 1px solid rgba(59, 130, 246, 0.3); }
-    .tag-slip { background: rgba(254, 240, 138, 0.15); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.3); display: flex; align-items: center; gap: 4px; }
-    .tag-phone { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); display: flex; align-items: center; gap: 4px; }
-    .tag-card { background: rgba(139, 92, 246, 0.15); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3); display: flex; align-items: center; gap: 4px; }
-    
-    .record-bottom { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); border-top: 1px dashed var(--btn-border); padding-top: 12px; margin-left: 6px; }
-    .record-actions { display: flex; gap: 8px; align-items: center; }
-    .btn-status { width: 36px; height: 36px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-    .btn-status.pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
-    .btn-status.cleared { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
-    
-    .btn-line { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); padding: 0 12px; height: 36px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
-    .btn-line.sent { background: #1e293b; color: #64748b; border-color: #334155; }
-    .btn-delete { background: #1e293b; color: #64748b; width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--btn-border); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-    .btn-delete:active { background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: #ef4444; }
 
-    /* Modals */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 12px; opacity: 0; transition: opacity 0.3s ease; }
+    /* ========================================= */
+    /* 4. HISTORY VIEW (หน้ารายการบันทึก)          */
+    /* ========================================= */
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .summary-card { background: var(--card-bg); padding: 16px; border-radius: var(--radius); box-shadow: 0 6px 20px rgba(0,0,0,0.08); border: 1px solid var(--btn-border); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .summary-title { font-size: 12px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .summary-value { font-size: 24px; font-weight: 700; }
+    .summary-value.highlight { color: var(--warning); }
+    .summary-value.total { color: #0284c7; }
+
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: var(--card-bg); padding: 14px; border-radius: var(--radius); border: 1px solid var(--btn-border); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .section-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--text); }
+    .header-actions { display: flex; gap: 8px; }
+    .btn-export, .btn-reset { padding: 10px 14px; border-radius: 12px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+    .btn-export { background: var(--excel); color: white; box-shadow: 0 4px 10px rgba(16, 124, 65, 0.3); }
+    .btn-reset { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+    
+    .record-list { display: flex; flex-direction: column; gap: 14px; padding-bottom: 20px; }
+    .record-item { background: var(--card-bg); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 12px; position: relative; overflow: hidden; animation: popIn 0.35s ease; border: 1px solid var(--btn-border); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .record-item.pending { border-left: 6px solid var(--warning); }
+    .record-item.pending .amount { color: var(--warning); }
+    .record-item.cleared { border-left: 6px solid var(--success); opacity: 0.6; filter: grayscale(20%); }
+    .record-item.cleared .amount { color: var(--text-muted); }
+    
+    .record-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
+    .amount { font-size: 24px; font-weight: 700; white-space: nowrap; flex-shrink: 0; line-height: 1; margin-top: 2px; }
+    
+    .tag { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+    .tag-pump { background: var(--btn-bg); color: var(--text-muted); border: 1px solid var(--btn-border); }
+    .tag-gas95 { background: rgba(249, 115, 22, 0.15); color: #ea580c; border: 1px solid rgba(249, 115, 22, 0.3); }
+    .tag-e20 { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .tag-b7 { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .tag-card { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); }
+    .tag-phone { background: rgba(14, 165, 233, 0.15); color: #0ea5e9; border: 1px solid rgba(14, 165, 233, 0.3); }
+    .tag-slip { background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.3); }
+    
+    .record-bottom { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); border-top: 1px dashed var(--btn-border); padding-top: 12px; }
+    .record-actions { display: flex; gap: 8px; }
+    .btn-status { width: 38px; height: 38px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .btn-status.pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+    .btn-status.cleared { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    .btn-line { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0 14px; height: 38px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .btn-line.sent { background: var(--btn-bg); color: var(--text-muted); border-color: var(--btn-border); }
+    .btn-delete { background: var(--btn-bg); color: var(--text-muted); width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--btn-border); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+    /* ========================================= */
+    /* 5. BOTTOM NAVIGATION TAB BAR                */
+    /* ========================================= */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; width: 100%; height: 75px;
+      background: var(--card-bg); border-top: 1px solid var(--btn-border);
+      display: flex; justify-content: space-around; align-items: center; z-index: 1000;
+      box-shadow: 0 -5px 20px rgba(0,0,0,0.05); padding-bottom: env(safe-area-inset-bottom);
+      transition: background-color 0.3s;
+    }
+    .nav-btn { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); background: none; border: none; font-size: 12px; font-weight: 600; gap: 4px; cursor: pointer; transition: 0.3s; position: relative; }
+    .nav-btn svg { width: 24px; height: 24px; stroke-width: 2; transition: 0.3s; stroke: currentColor; fill: none; }
+    .nav-btn.active { color: #0284c7; }
+    .nav-btn.active svg { transform: translateY(-3px); stroke: #0284c7; }
+    
+    .nav-badge-count { position: absolute; top: 10px; right: 26%; background: var(--danger); color: white; font-size: 10px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid var(--card-bg); opacity: 0; transform: scale(0); transition: 0.3s; }
+    .nav-badge-count.show { opacity: 1; transform: scale(1); }
+
+    /* ========================================= */
+    /* 6. MODALS (หน้าต่างแจ้งเตือนและกรอกข้อมูล)    */
+    /* ========================================= */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 12px; opacity: 0; transition: opacity 0.3s ease; }
     .modal-overlay.active { display: flex; opacity: 1; }
-    .modal-card { background: var(--card-bg); border-radius: 24px; overflow: hidden; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.8); border: 1px solid var(--btn-border); transform: scale(0.9); transition: transform 0.3s; }
+    .modal-card { background: var(--card-bg); border-radius: 24px; overflow: hidden; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.3); border: 1px solid var(--btn-border); transform: scale(0.9); transition: transform 0.3s; width: 100%; max-width: 360px; }
     .modal-overlay.active .modal-card { transform: scale(1); }
 
-    /* Scanner Live Modal: ตั้งค่า Z-index ให้ซ้อนทับกรอบอื่นๆ มิดชิด */
-    #liveScannerModal { z-index: 1500 !important; }
-    #liveScannerModal .modal-card { width: 100%; max-width: 400px; background: #0b1120; border-color: #8b5cf6; }
-    .scanner-header { padding: 16px; background: #1e293b; font-size: 16px; font-weight: 700; color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--btn-border); }
-    .scanner-body { position: relative; width: 100%; aspect-ratio: 4/3; background: black; overflow: hidden; }
-    .scanner-video { width: 100%; height: 100%; object-fit: cover; }
-    .scanner-overlay-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 50%; border: 3px solid rgba(139, 92, 246, 0.8); border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6); }
-    .scanner-laser { position: absolute; width: 100%; height: 2px; background: #a78bfa; box-shadow: 0 0 10px #a78bfa; top: 0; animation: scanLaser 2s infinite ease-in-out; }
-    @keyframes scanLaser { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
-    .scanner-footer { padding: 16px; display: flex; justify-content: center; }
-    .btn-close-scanner { background: #334155; color: white; border: none; padding: 12px 30px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s;}
-    .btn-close-scanner:active { background: #ef4444; }
-
-    /* General Inputs Modals (Phone & Card) */
     .input-modal { align-items: flex-start; padding-top: 15vh; }
-    .input-modal .modal-card { width: 95%; max-width: 360px; }
-    .input-modal-body { padding: 28px 20px; }
-    .input-modal-body h3 { color: white; margin-bottom: 8px; font-size: 18px; }
+    .input-modal-body { padding: 30px 24px; }
+    .input-modal-body h3 { color: var(--text); margin-bottom: 8px; font-size: 20px; }
+    .input-row { display: flex; gap: 10px; margin-bottom: 24px; }
     
-    .input-row { display: flex; gap: 8px; margin-bottom: 24px; }
-    .member-input { flex: 1; height: 60px; background: #090e17; border: 2px solid var(--btn-border); border-radius: 14px; font-size: 24px; text-align: center; outline: none; letter-spacing: 2px; transition: all 0.3s; margin-bottom: 24px;}
+    .member-input { flex: 1; height: 64px; background: var(--btn-bg); border: 2px solid var(--btn-border); border-radius: 16px; font-size: 26px; font-weight: 700; text-align: center; outline: none; letter-spacing: 2px; transition: 0.3s; color: var(--text); margin-bottom: 24px;}
     .input-row .member-input { margin-bottom: 0; }
-
-    #memberPhoneInput { color: #38bdf8; }
     #memberPhoneInput:focus { border-color: #38bdf8; }
-    #memberCardInput { color: #a78bfa; font-size: 18px; }
+    #memberCardInput { font-size: 18px; }
     #memberCardInput:focus { border-color: #8b5cf6; }
+    
+    body.light-mode .member-input { background: #ffffff; }
 
-    .btn-scan-inside { width: 60px; height: 60px; background: #1e293b; border: 2px solid var(--btn-border); border-radius: 14px; color: #a78bfa; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;}
+    .btn-scan-inside { width: 64px; height: 64px; background: var(--btn-bg); border: 2px solid var(--btn-border); border-radius: 16px; color: #8b5cf6; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;}
     .btn-scan-inside:active { transform: scale(0.9); background: #8b5cf6; color: white; border-color: #8b5cf6;}
 
-    /* QR Modal Specific */
-    #qrModal .modal-card { width: 100%; max-width: 500px; height: 96vh; max-height: 850px; display: flex; flex-direction: column; }
-    .qr-card-header { background: #0f172a; color: white; padding: 18px 20px; border-bottom: 1px solid var(--btn-border); }
-    .qr-card-header h2 { font-size: 17px; font-weight: 600; }
-    .store-details { background: #111c2e; padding: 14px 16px; border-bottom: 1px solid var(--btn-border); font-size: 13px; color: var(--text-muted); }
-    .store-name { font-weight: 700; font-size: 15px; color: #f8fafc; margin-bottom: 4px; }
-    .qr-info-bar { display: flex; justify-content: space-around; padding: 14px 16px; background: #162032; font-size: 14px; border-bottom: 1px dashed var(--btn-border); }
-    .qr-code-box { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; padding: 10px; overflow-y: auto; position: relative; }
-    
+    /* Scanner Live Modal */
+    #liveScannerModal { z-index: 2500 !important; }
+    #liveScannerModal .modal-card { max-width: 400px; background: #000; border-color: #8b5cf6; }
+    .scanner-header { padding: 18px; background: #111; font-size: 16px; font-weight: 700; color: white; display: flex; justify-content: space-between; align-items: center; }
+    .scanner-body { position: relative; width: 100%; aspect-ratio: 4/3; background: black; overflow: hidden; }
+    .scanner-video { width: 100%; height: 100%; object-fit: cover; }
+    .scanner-overlay-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; height: 55%; border: 3px solid rgba(139, 92, 246, 0.9); border-radius: 16px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7); }
+    .scanner-laser { position: absolute; width: 100%; height: 3px; background: #a78bfa; box-shadow: 0 0 15px #a78bfa; top: 0; animation: scanLaser 2s infinite ease-in-out; }
+    @keyframes scanLaser { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
+    .scanner-footer { padding: 18px; background: #111; }
+    .btn-close-scanner { background: #333; color: white; border: none; padding: 14px 0; width: 100%; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; }
+
+    /* QR Modal */
+    #qrModal .modal-card { max-width: 500px; height: 96vh; max-height: 850px; display: flex; flex-direction: column; background: var(--card-bg);}
+    .qr-card-header { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; padding: 20px; font-size: 18px; font-weight: 700; }
+    .store-details { padding: 14px 16px; border-bottom: 1px solid var(--btn-border); font-size: 13px; color: var(--text-muted); }
+    .store-name { font-weight: 700; font-size: 15px; color: var(--text); margin-bottom: 4px; }
+    .qr-info-bar { display: flex; justify-content: space-around; padding: 14px 16px; background: var(--btn-bg); font-size: 14px; border-bottom: 1px dashed var(--btn-border); color: var(--text);}
+    .qr-code-box { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; padding: 16px; position: relative; }
+    .qr-img { width: 95%; max-width: 380px; aspect-ratio: 1/1; border-radius: 16px; border: 5px solid #f1f5f9; padding: 10px; }
+    .qr-price-display { margin-top: 15px; font-size: 38px; font-weight: 700; color: #0284c7; }
+    .qr-card-footer { padding: 16px; background: var(--card-bg); display: flex; gap: 10px; border-top: 1px solid var(--btn-border); }
+
     /* WAVE PULSE LOADING */
     .loading-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; }
     .wave-spinner { display: flex; justify-content: center; align-items: center; gap: 8px; height: 60px; margin-bottom: 15px; }
     .wave-spinner div { width: 8px; height: 35px; background: #38bdf8; border-radius: 6px; animation: wavePulse 1s ease-in-out infinite; }
-    .wave-spinner div:nth-child(1) { animation-delay: -0.4s; background: #38bdf8; }
-    .wave-spinner div:nth-child(2) { animation-delay: -0.2s; background: #10b981; }
-    .wave-spinner div:nth-child(3) { animation-delay: 0s; background: #0284c7; }
+    .wave-spinner div:nth-child(1) { animation-delay: -0.4s; } .wave-spinner div:nth-child(2) { animation-delay: -0.2s; background: #10b981; } .wave-spinner div:nth-child(3) { background: #0284c7; }
     @keyframes wavePulse { 0%, 100% { transform: scaleY(0.5); opacity: 0.5; } 50% { transform: scaleY(1.3); opacity: 1; } }
-    .loading-text { font-size: 15px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px;}
     
     .qr-content { display: none; flex-direction: column; align-items: center; width: 100%; animation: fadeIn 0.4s ease-out; }
-    .qr-img { width: 95%; max-width: 400px; height: auto; aspect-ratio: 1/1; border-radius: 12px; border: 4px solid #f1f5f9; padding: 8px; }
-    .qr-price-display { margin-top: 15px; font-size: 34px; font-weight: 700; color: #0284c7; }
-    
     .slip-preview-container { margin-top: 5px; width: 100%; display: none; text-align: center; }
-    .slip-preview-img { width: auto; max-width: 95%; height: auto; max-height: 280px; border-radius: 12px; border: 4px solid #10b981; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25); object-fit: contain; }
+    .slip-preview-img { width: auto; max-width: 95%; max-height: 280px; border-radius: 12px; border: 4px solid #10b981; }
     .slip-price-display { margin-top: 8px; font-size: 28px; font-weight: 700; color: #10b981; }
 
-    .qr-card-footer { margin-top: auto; padding: 16px; background: #0f172a; display: flex; gap: 10px; border-top: 1px solid var(--btn-border); }
-    .btn-modal-close, .btn-modal-camera, .btn-modal-save { height: 55px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; border: none; font-size: 16px;}
-    .btn-modal-close { flex: 0.8; background: var(--btn-bg); color: #cbd5e1; }
-    .btn-modal-camera { flex: 1.2; background: #0284c7; color: white; display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .btn-modal-save { flex: 1.2; background: #10b981; color: white; }
+    .btn-modal-close, .btn-modal-camera, .btn-modal-save { height: 56px; border-radius: 16px; font-weight: 700; cursor: pointer; border: none; font-size: 16px; color: white;}
+    .btn-modal-close { background: var(--btn-bg); color: var(--text); border: 1px solid var(--btn-border);}
+    .btn-modal-camera { background: #0284c7; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-modal-save { background: #10b981; }
 
-    /* Success Pop-up */
-    .success-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 17, 32, 0.9); backdrop-filter: blur(5px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+    .success-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; opacity: 0; visibility: hidden; transition: 0.3s; }
     .success-overlay.active { opacity: 1; visibility: visible; }
-    .success-check { width: 80px; height: 80px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; transform: scale(0); box-shadow: 0 0 30px rgba(16, 185, 129, 0.4); margin-bottom: 15px; }
+    .success-check { width: 80px; height: 80px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; transform: scale(0); margin-bottom: 15px; box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);}
     .success-overlay.active .success-check { animation: popCheck 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
     
-    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #334155; color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 500; opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.4); text-align: center; pointer-events: none;}
+    .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(100px); background: #334155; color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 500; opacity: 0; transition: 0.4s; z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.2); pointer-events: none;}
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   </style>
 </head>
 <body>
 
+  <!-- แจ้งเตือนสำเร็จ -->
   <div id="successOverlay" class="success-overlay">
     <div class="success-check">
-      <svg width="45" height="45" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      <svg width="45" height="45" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
     </div>
-    <h3 style="color:#f8fafc; font-weight:700; font-size: 20px;">บันทึกสำเร็จ</h3>
+    <h3 style="color:#f8fafc; font-weight:700; font-size: 22px;">บันทึกเรียบร้อย</h3>
   </div>
 
   <div class="container">
-    <header class="header">
-      <div class="header-top">
-        <div class="header-badge">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-          ถุงเงิน & QR สแกนจ่าย
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: หน้าหลักสำหรับบันทึก (Fixed View) -->
+    <!-- ========================================== -->
+    <div id="viewHome" class="view-section active">
+      
+      <!-- Header ปรับปรุงใหม่ สวยงาม มีปุ่มเปลี่ยนธีม -->
+      <div class="header">
+        <div class="header-info">
+          <h1>บันทึกหน้าลาน PTT</h1>
+          <p>หจก. ทุ่งยางแดงเอ็นเตอร์ไพรส์</p>
         </div>
-        <span class="promptpay-id">หจก. ทุ่งยางแดงเอ็นเตอร์ไพรส์</span>
+        <button class="btn-theme" onclick="toggleTheme()" id="themeBtn" title="สลับโหมดกลางวัน/กลางคืน">☀️</button>
       </div>
-      <h1>บันทึกยอดโอนหน้าลาน</h1>
-    </header>
 
-    <div class="summary-grid">
-      <div class="summary-card">
-        <span class="summary-title">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg>
-          ค้างแจ้งแคชเชียร์
-        </span>
-        <span class="summary-value highlight" id="pendingCount">0 รายการ</span>
-      </div>
-      <div class="summary-card">
-        <span class="summary-title">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
-          ยอดโอนรวมวันนี้
-        </span>
-        <span class="summary-value total" id="totalAmount">฿0</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <form id="transferForm" onsubmit="event.preventDefault(); amountInput.blur(); triggerQR();">
-        
-        <div class="section-label">
-          <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22v-8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v8"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0v-7a3 3 0 0 0-3-3h-1"/><path d="M5 12V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v8"/></svg> เลขที่หน้าจ่าย</span>
+      <div class="card">
+        <form id="transferForm" onsubmit="event.preventDefault(); triggerQR();">
           
-          <div class="action-buttons-right">
-            <button type="button" class="btn-card-scan" id="btnCardIcon" onclick="openCardModal()" title="บัตรสมาชิก (16 หลัก) / สแกนบาร์โค้ด">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"></path><path d="M8 7v10"></path><path d="M12 7v10"></path><path d="M16 7v10"></path></svg>
-              <div class="card-badge" id="cardBadge"></div>
-            </button>
+          <div class="section-label">
+            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22v-8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v8"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0v-7a3 3 0 0 0-3-3h-1"/><path d="M5 12V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v8"/></svg> เลขที่หน้าจ่าย</span>
             
-            <button type="button" class="btn-phone" id="btnPhoneIcon" onclick="openPhoneModal()" title="เบอร์โทรศัพท์ (10 หลัก)">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-              <div class="phone-badge" id="phoneBadge"></div>
+            <div class="action-buttons-right">
+              <button type="button" class="btn-card-scan" id="btnCardIcon" onclick="openCardModal()" title="บัตรสมาชิก (16 หลัก)">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"></path><path d="M8 7v10"></path><path d="M12 7v10"></path><path d="M16 7v10"></path></svg>
+                <div class="status-dot"></div>
+              </button>
+              
+              <button type="button" class="btn-phone" id="btnPhoneIcon" onclick="openPhoneModal()" title="เบอร์โทรศัพท์ (10 หลัก)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <div class="status-dot"></div>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid-pumps">
+            <button type="button" class="grid-pump-btn" id="p1" onclick="selectPump(1)">1</button>
+            <button type="button" class="grid-pump-btn" id="p2" onclick="selectPump(2)">2</button>
+            <button type="button" class="grid-pump-btn" id="p3" onclick="selectPump(3)">3</button>
+            <button type="button" class="grid-pump-btn" id="p4" onclick="selectPump(4)">4</button>
+            <button type="button" class="grid-pump-btn" id="p5" onclick="selectPump(5)">5</button>
+            <button type="button" class="grid-pump-btn" id="p6" onclick="selectPump(6)">6</button>
+            <button type="button" class="grid-pump-btn" id="p7" onclick="selectPump(7)">7</button>
+            <button type="button" class="grid-pump-btn" id="p8" onclick="selectPump(8)">8</button>
+          </div>
+
+          <div class="section-label">
+            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg> ชนิดน้ำมัน</span>
+          </div>
+
+          <div class="grid-oils">
+            <button type="button" class="grid-oil-btn g95" id="oilG95" onclick="selectOil('G95')">G95</button>
+            <button type="button" class="grid-oil-btn e20" id="oilE20" onclick="selectOil('E20')">E20</button>
+            <button type="button" class="grid-oil-btn b7" id="oilB7" onclick="selectOil('B7')">B7</button>
+          </div>
+
+          <div class="section-label">
+            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg> จำนวนเงิน (บาท)</span>
+          </div>
+
+          <div class="amount-wrapper">
+            <input type="number" inputmode="decimal" id="amountInput" class="amount-input" placeholder="0" min="1" step="any" required oninput="toggleClearBtn()">
+            <!-- ปุ่ม X ลบเงิน (ถูกตั้งค่า onpointerdown ไม่ให้คีย์บอร์ดเด้ง) -->
+            <button type="button" id="clearBtn" class="btn-clear-input" onpointerdown="clearAmount(event)">✕</button>
+          </div>
+          
+          <div class="quick-amount">
+            <button type="button" class="quick-btn" onclick="addAmount(10)">+10</button>
+            <button type="button" class="quick-btn" onclick="addAmount(50)">+50</button>
+            <button type="button" class="quick-btn" onclick="addAmount(100)">+100</button>
+            <button type="button" class="quick-btn" onclick="addAmount(500)">+500</button>
+            <button type="button" class="quick-btn" onclick="addAmount(1000)">+1,000</button>
+          </div>
+
+          <div class="action-btn-row">
+            <button type="button" class="btn-qr-show" onclick="triggerQR()">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
+              สร้าง QR
+            </button>
+            <button type="button" class="btn-submit" onclick="saveRecord()">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              บันทึกรายการ
             </button>
           </div>
-        </div>
-
-        <div class="grid-pumps">
-          <button type="button" class="grid-pump-btn" id="p1" onclick="selectPump(1)">1</button>
-          <button type="button" class="grid-pump-btn" id="p2" onclick="selectPump(2)">2</button>
-          <button type="button" class="grid-pump-btn" id="p3" onclick="selectPump(3)">3</button>
-          <button type="button" class="grid-pump-btn" id="p4" onclick="selectPump(4)">4</button>
-          <button type="button" class="grid-pump-btn" id="p5" onclick="selectPump(5)">5</button>
-          <button type="button" class="grid-pump-btn" id="p6" onclick="selectPump(6)">6</button>
-          <button type="button" class="grid-pump-btn" id="p7" onclick="selectPump(7)">7</button>
-          <button type="button" class="grid-pump-btn" id="p8" onclick="selectPump(8)">8</button>
-        </div>
-
-        <div class="section-label">
-          <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg> ชนิดน้ำมัน</span>
-        </div>
-
-        <div class="grid-oils">
-          <button type="button" class="grid-oil-btn g95" id="oilG95" onclick="selectOil('G95')">G95</button>
-          <button type="button" class="grid-oil-btn e20" id="oilE20" onclick="selectOil('E20')">E20</button>
-          <button type="button" class="grid-oil-btn b7" id="oilB7" onclick="selectOil('B7')">B7</button>
-        </div>
-
-        <div class="section-label">
-          <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg> จำนวนเงิน (บาท)</span>
-        </div>
-
-        <div class="amount-wrapper">
-          <input type="number" inputmode="decimal" id="amountInput" class="amount-input" placeholder="0" min="1" step="any" required oninput="toggleClearBtn()">
-          <!-- แก้ไขบรรทัดนี้: ใส่ false ให้เวลาล้างยอดเงินแล้วคีย์บอร์ดไม่เด้งขึ้นมา -->
-          <button type="button" id="clearBtn" class="btn-clear-input" onclick="clearAmount(false)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-        </div>
-        
-        <div class="quick-amount">
-          <button type="button" class="quick-btn" onclick="addAmount(5)">+5</button>
-          <button type="button" class="quick-btn" onclick="addAmount(10)">+10</button>
-          <button type="button" class="quick-btn" onclick="addAmount(100)">+100</button>
-          <button type="button" class="quick-btn" onclick="addAmount(500)">+500</button>
-          <button type="button" class="quick-btn" onclick="addAmount(1000)">+1,000</button>
-        </div>
-
-        <div class="action-btn-row">
-          <button type="button" class="btn-qr-show" onclick="triggerQR()">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
-            สร้าง QR
-          </button>
-          <button type="button" class="btn-submit" onclick="saveRecord()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            บันทึกรายการ
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <div class="section-header">
-      <div class="section-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
-        รายการที่บันทึก
-      </div>
-      <div class="header-actions">
-        <button class="btn-reset" onclick="resetDayRecords()">เริ่มวันใหม่</button>
-        <button class="btn-export" onclick="exportCSV()">สรุป Excel</button>
+        </form>
       </div>
     </div>
-    <div id="recordList" class="record-list"></div>
-  </div>
+    <!-- ========================================== -->
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: หน้าประวัติและรายงาน (เลื่อนดูได้)  -->
+    <!-- ========================================== -->
+    <div id="viewHistory" class="view-section">
+      <div class="summary-grid">
+        <div class="summary-card">
+          <span class="summary-title">ค้างแจ้งแคชเชียร์</span>
+          <span class="summary-value highlight" id="pendingCount">0 รายการ</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-title">ยอดโอนรวมวันนี้</span>
+          <span class="summary-value total" id="totalAmount">฿0</span>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+          ประวัติการบันทึก
+        </div>
+        <div class="header-actions">
+          <button class="btn-reset" onclick="resetDayRecords()">เริ่มใหม่</button>
+          <button class="btn-export" onclick="exportCSV()">Excel</button>
+        </div>
+      </div>
+      
+      <div id="recordList" class="record-list"></div>
+    </div>
+    <!-- ========================================== -->
+
+  </div> <!-- End Container -->
+
+
+  <!-- ========================================== -->
+  <!-- Tab Bar ด้านล่างสำหรับสลับหน้าจอ (ใหม่ สวยงาม) -->
+  <!-- ========================================== -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="navBtnHome" onclick="switchView('Home')">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      บันทึกยอด
+    </button>
+    <button class="nav-btn" id="navBtnHistory" onclick="switchView('History')">
+      <div style="position: relative;">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        <div class="nav-badge-count" id="navBadgeCount">0</div>
+      </div>
+      รายการ
+    </button>
+  </nav>
+
+  <!-- ========================================== -->
+  <!-- MODALS (หน้าต่างแจ้งเตือนและกรอกข้อมูล)        -->
+  <!-- ========================================== -->
 
   <!-- Scanner Live Camera Modal -->
   <div id="liveScannerModal" class="modal-overlay">
@@ -362,57 +435,53 @@
       </div>
       <div class="scanner-body">
         <video id="liveCameraVideo" class="scanner-video" playsinline autoplay></video>
-        <div class="scanner-overlay-box">
-          <div class="scanner-laser"></div>
-        </div>
+        <div class="scanner-overlay-box"><div class="scanner-laser"></div></div>
       </div>
       <div class="scanner-footer">
-        <button class="btn-close-scanner" onclick="closeLiveScanner()">ยกเลิกสแกน</button>
+        <button class="btn-close-scanner" onclick="closeLiveScanner()">ยกเลิกกล้องสแกน</button>
       </div>
     </div>
   </div>
 
   <!-- Phone Modal (10 Digits Only) -->
   <div id="phoneModal" class="modal-overlay input-modal">
-    <div class="modal-card">
+    <div class="modal-card" id="phoneModalBodyBox">
       <div class="input-modal-body" id="phoneModalContent">
-        <h3>เบอร์โทรศัพท์</h3>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">กรอกเบอร์โทรลูกค้า (10 หลัก)</p>
+        <h3 style="color:var(--text);">เบอร์โทรศัพท์ลูกค้า</h3>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">กรอกเฉพาะเบอร์โทร 10 หลัก</p>
         <input type="tel" id="memberPhoneInput" class="member-input" placeholder="08X-XXX-XXXX">
-        <div class="action-btn-row">
-          <button type="button" class="btn-modal-close" style="height:48px;" onclick="closePhoneModal()">ยกเลิก</button>
-          <button type="button" class="btn-modal-save" style="height:48px;" onclick="savePhoneData()">ตกลง</button>
+        <div class="action-btn-row" style="margin-top: 20px;">
+          <button type="button" class="btn-modal-close" onclick="closePhoneModal()">ยกเลิก</button>
+          <button type="button" class="btn-modal-save" onclick="savePhoneData()">ตกลง</button>
         </div>
       </div>
-      
       <div id="phoneLoadingWrapper" class="loading-wrapper" style="display:none; padding: 40px 20px;">
         <div class="wave-spinner"><div></div><div></div><div></div></div>
-        <div class="loading-text" style="color: white; margin-top: 15px;">กำลังบันทึกเบอร์โทร...</div>
+        <div class="loading-text" style="color: var(--text); margin-top: 15px;">กำลังบันทึกเบอร์โทร...</div>
       </div>
     </div>
   </div>
 
   <!-- Card Modal (16 Digits + Scan Button) -->
   <div id="cardModal" class="modal-overlay input-modal">
-    <div class="modal-card">
+    <div class="modal-card" id="cardModalBodyBox">
       <div class="input-modal-body" id="cardModalContent">
-        <h3>บัตรสมาชิก Blue Card</h3>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">กรอกเลข 16 หลัก หรือกดปุ่มสแกนบาร์โค้ด</p>
+        <h3 style="color:var(--text);">บัตรสมาชิก Blue Card</h3>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">กรอกเลข 16 หลัก หรือกดสแกน</p>
         <div class="input-row">
           <input type="tel" id="memberCardInput" class="member-input" placeholder="เลข 16 หลัก">
           <button type="button" class="btn-scan-inside" onclick="openLiveScanner()" title="เปิดกล้องสแกน">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"></path><path d="M8 7v10"></path><path d="M12 7v10"></path><path d="M16 7v10"></path></svg>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"></path><path d="M8 7v10"></path><path d="M12 7v10"></path><path d="M16 7v10"></path></svg>
           </button>
         </div>
         <div class="action-btn-row">
-          <button type="button" class="btn-modal-close" style="height:48px;" onclick="closeCardModal()">ยกเลิก</button>
-          <button type="button" class="btn-modal-save" style="height:48px;" onclick="saveCardData()">ตกลง</button>
+          <button type="button" class="btn-modal-close" onclick="closeCardModal()">ยกเลิก</button>
+          <button type="button" class="btn-modal-save" onclick="saveCardData()">ตกลง</button>
         </div>
       </div>
-      
       <div id="cardLoadingWrapper" class="loading-wrapper" style="display:none; padding: 40px 20px;">
         <div class="wave-spinner"><div></div><div></div><div></div></div>
-        <div class="loading-text" style="color: white; margin-top: 15px;">กำลังบันทึกข้อมูลบัตร...</div>
+        <div class="loading-text" style="color: var(--text); margin-top: 15px;">กำลังบันทึกข้อมูลบัตร...</div>
       </div>
     </div>
   </div>
@@ -420,44 +489,40 @@
   <!-- QR Modal -->
   <div id="qrModal" class="modal-overlay">
     <div class="modal-card">
-      <div class="qr-card-header"><h2>สแกนจ่าย QR Payment</h2></div>
+      <div class="qr-card-header">สแกนจ่าย QR Payment</div>
       <div class="store-details">
         <div class="store-name">ชื่อบัญชี : หจก. ทุ่งยางแดงเอ็นเตอร์ไพรส์</div>
         <div>รหัสร้านค้า : BG094353WQ20000939H</div>
       </div>
       <div class="qr-info-bar">
-        <span>ตู้: <b id="modalPump" style="color:#38bdf8;font-size:15px;">-</b></span>
-        <span>น้ำมัน: <b id="modalOil" style="color:var(--g95);font-size:15px;">-</b></span>
+        <span>ตู้: <b id="modalPump" style="color:#0ea5e9;font-size:15px;">-</b></span>
+        <span>น้ำมัน: <b id="modalOil" style="color:#ea580c;font-size:15px;">-</b></span>
       </div>
-      
       <div class="qr-code-box">
         <div id="loadingWrapper" class="loading-wrapper">
           <div class="wave-spinner"><div></div><div></div><div></div></div>
           <div class="loading-text">กำลังสร้าง QR Code...</div>
         </div>
-
         <div id="qrContentWrapper" class="qr-content">
           <img id="qrImage" class="qr-img" src="" alt="QR">
           <div class="qr-price-display" id="modalPrice">฿0.00</div>
-          
           <div id="slipPreviewContainer" class="slip-preview-container">
-            <span style="font-size: 14px; color: #10b981; font-weight: 700; display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom: 6px;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ถ่ายสลิปเรียบร้อย
+            <span style="font-size: 15px; color: #10b981; font-weight: 700; display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom: 10px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ถ่ายสลิปเรียบร้อย
             </span>
             <img id="slipPreviewImg" class="slip-preview-img" src="">
             <div id="slipPriceDisplay" class="slip-price-display">฿0.00</div>
           </div>
         </div>
       </div>
-
       <div class="qr-card-footer">
-        <button type="button" class="btn-modal-close" onclick="closeQRModal()">ปิด</button>
+        <button type="button" class="btn-modal-close" style="flex:0.8;" onclick="closeQRModal()">ปิด</button>
         <input type="file" id="slipInput" accept="image/*" capture="environment" style="display: none;" onchange="handleSlipUpload(event)">
-        <button type="button" class="btn-modal-camera" onclick="document.getElementById('slipInput').click()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+        <button type="button" class="btn-modal-camera" style="flex:1.2;" onclick="document.getElementById('slipInput').click()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
           สลิป
         </button>
-        <button type="button" class="btn-modal-save" onclick="saveFromModal()">บันทึก</button>
+        <button type="button" class="btn-modal-save" style="flex:1.2;" onclick="saveFromModal()">บันทึก</button>
       </div>
     </div>
   </div>
@@ -465,6 +530,24 @@
   <div id="toast" class="toast"></div>
 
   <script>
+    /* ================================================= */
+    /* 1. Theme Toggle System (กลางวัน/กลางคืน)             */
+    /* ================================================= */
+    const savedTheme = localStorage.getItem('edc_theme') || 'dark';
+    if(savedTheme === 'light') {
+      document.body.classList.add('light-mode');
+      document.addEventListener("DOMContentLoaded", () => document.getElementById('themeBtn').textContent = '🌙');
+    }
+    
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle('light-mode');
+      localStorage.setItem('edc_theme', isLight ? 'light' : 'dark');
+      document.getElementById('themeBtn').textContent = isLight ? '🌙' : '☀️';
+    }
+
+    /* ================================================= */
+    /* System Variables & Initialization                 */
+    /* ================================================= */
     let records = JSON.parse(localStorage.getItem('gas_station_transfers') || '[]');
     let selectedPumpNum = null;
     let selectedOil = null;
@@ -472,10 +555,8 @@
     let currentSlipBase64 = null;
     let currentSlipFilename = "";
 
-    const form = document.getElementById('transferForm');
     const amountInput = document.getElementById('amountInput');
     const clearBtn = document.getElementById('clearBtn');
-    
     const btnPhoneIcon = document.getElementById('btnPhoneIcon');
     const btnCardIcon = document.getElementById('btnCardIcon');
     
@@ -488,21 +569,33 @@
     const recordList = document.getElementById('recordList');
     const pendingCount = document.getElementById('pendingCount');
     const totalAmount = document.getElementById('totalAmount');
+    const navBadgeCount = document.getElementById('navBadgeCount');
     const toast = document.getElementById('toast');
     
-    const loadingWrapper = document.getElementById('loadingWrapper');
-    const qrContentWrapper = document.getElementById('qrContentWrapper');
     const qrImage = document.getElementById('qrImage');
     const modalPrice = document.getElementById('modalPrice');
     const slipPriceDisplay = document.getElementById('slipPriceDisplay');
 
     const allowedE20Pumps = [3, 4, 7, 8];
 
+    /* ----------------------------------------------------- */
+    /* ระบบสลับหน้าจอ (Tab Navigation)                       */
+    /* ----------------------------------------------------- */
+    function switchView(viewName) {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById('view' + viewName).classList.add('active');
+      document.getElementById('navBtn' + viewName).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ----------------------------------------------------- */
+    /* การเลือกปั๊มและน้ำมัน                                    */
+    /* ----------------------------------------------------- */
     function selectPump(num) {
       selectedPumpNum = num;
       document.querySelectorAll('.grid-pump-btn').forEach(btn => btn.classList.remove('active'));
       document.getElementById('p' + num).classList.add('active');
-
       const btnE20 = document.getElementById('oilE20');
       if (!allowedE20Pumps.includes(num)) {
         btnE20.classList.add('disabled');
@@ -520,29 +613,27 @@
     }
 
     /* ----------------------------------------------------- */
-    /* 1. ล็อกคีย์บอร์ด 100% สำหรับช่องเบอร์โทร และ บัตรสมาชิก   */
+    /* ล็อกคีย์บอร์ด 100% (กันหดเมื่อแตะพื้นที่ว่างในกรอบ)           */
     /* ----------------------------------------------------- */
-    
-    function preventKeyboardHide(modalElement, inputElement) {
-      modalElement.addEventListener('touchstart', function(e) {
-        // ถ้านิ้วจิ้มโดนพื้นที่อื่น ที่ไม่ใช่ช่องกรอก และไม่ใช่ปุ่ม ให้ป้องกันการทัช (คีย์บอร์ดจะไม่หดลง)
-        if (e.target !== inputElement && !e.target.closest('button') && !e.target.closest('input')) {
+    function lockKeyboardFocus(modalId, inputElement) {
+      const modal = document.getElementById(modalId);
+      modal.addEventListener('pointerdown', function(e) {
+        // ถ้านิ้วจิ้มโดนกรอบหลัง (ที่ไม่ใช่ Input หรือปุ่ม) ให้ห้ามคีย์บอร์ดหด
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
           e.preventDefault(); 
         }
-      }, {passive: false});
+      });
     }
-
-    preventKeyboardHide(phoneModal, memberPhoneInput);
-    preventKeyboardHide(cardModal, memberCardInput);
+    lockKeyboardFocus('phoneModal', memberPhoneInput);
+    lockKeyboardFocus('cardModal', memberCardInput);
 
 
     /* ----------------------------------------------------- */
-    /* 2. ส่วนควบคุมหน้าต่างเบอร์โทรศัพท์ (10 หลักล้วน)        */
+    /* ส่วนควบคุมหน้าต่างเบอร์โทรศัพท์ (10 หลักล้วน)               */
     /* ----------------------------------------------------- */
-
     function openPhoneModal() {
       memberPhoneInput.value = currentMember.length === 10 ? currentMember : "";
-      memberPhoneInput.style.color = '#38bdf8';
+      memberPhoneInput.style.color = '#0284c7';
       memberPhoneInput.style.borderColor = 'var(--btn-border)';
       phoneModal.classList.add('active');
       setTimeout(() => memberPhoneInput.focus(), 150);
@@ -557,7 +648,7 @@
         this.style.color = '#ef4444'; this.style.borderColor = '#ef4444';
         showToast('⚠️ เบอร์โทรต้องมีแค่ 10 หลัก');
       } else {
-        this.style.color = '#38bdf8'; this.style.borderColor = 'var(--btn-border)';
+        this.style.color = '#0284c7'; this.style.borderColor = 'var(--btn-border)';
       }
     });
 
@@ -567,7 +658,6 @@
         showToast('⚠️ กรุณากรอกเบอร์โทรให้ครบ 10 หลัก');
         memberPhoneInput.focus(); return;
       }
-
       memberPhoneInput.blur(); 
       document.getElementById('phoneModalContent').style.display = 'none';
       document.getElementById('phoneLoadingWrapper').style.display = 'flex';
@@ -580,7 +670,7 @@
           document.getElementById('phoneModalContent').style.display = 'block';
           document.getElementById('phoneLoadingWrapper').style.display = 'none';
         }, 300);
-      }, 800);
+      }, 600);
     }
 
     memberPhoneInput.addEventListener('keydown', function(e) {
@@ -588,12 +678,11 @@
     });
 
     /* ----------------------------------------------------- */
-    /* 3. ส่วนควบคุมหน้าต่างบัตรสมาชิก (16 หลัก)              */
+    /* ส่วนควบคุมหน้าต่างบัตรสมาชิก (16 หลัก)                     */
     /* ----------------------------------------------------- */
-
     function openCardModal() {
       memberCardInput.value = currentMember.length === 16 ? currentMember : "";
-      memberCardInput.style.color = '#a78bfa';
+      memberCardInput.style.color = '#8b5cf6';
       memberCardInput.style.borderColor = 'var(--btn-border)';
       cardModal.classList.add('active');
       setTimeout(() => memberCardInput.focus(), 150);
@@ -608,7 +697,7 @@
         this.style.color = '#ef4444'; this.style.borderColor = '#ef4444';
         showToast('⚠️ จำนวนตัวเลขเกิน 16 หลัก');
       } else {
-        this.style.color = '#a78bfa'; this.style.borderColor = 'var(--btn-border)';
+        this.style.color = '#8b5cf6'; this.style.borderColor = 'var(--btn-border)';
       }
     });
 
@@ -618,7 +707,6 @@
         showToast('⚠️ บัตรสมาชิกต้องมี 16 หลักเป๊ะๆ');
         memberCardInput.focus(); return;
       }
-
       memberCardInput.blur(); 
       document.getElementById('cardModalContent').style.display = 'none';
       document.getElementById('cardLoadingWrapper').style.display = 'flex';
@@ -631,7 +719,7 @@
           document.getElementById('cardModalContent').style.display = 'block';
           document.getElementById('cardLoadingWrapper').style.display = 'none';
         }, 300);
-      }, 800);
+      }, 600);
     }
 
     memberCardInput.addEventListener('keydown', function(e) {
@@ -650,7 +738,7 @@
     }
 
     /* ----------------------------------------------------- */
-    /* 4. ส่วนของ Live Barcode Scanner (เรียลไทม์)           */
+    /* ส่วนของ Live Barcode Scanner (เรียลไทม์)                 */
     /* ----------------------------------------------------- */
     let liveStream = null;
     let scanInterval = null;
@@ -659,10 +747,10 @@
 
     async function openLiveScanner() {
       if (!window.isSecureContext) {
-         showToast('❌ ระบบกล้องต้องการความปลอดภัยระดับ HTTPS (ใช้บน GitHub)'); return;
+         showToast('❌ กล้องสแกนต้องเปิดผ่านเว็บ GitHub (HTTPS) เท่านั้นครับ'); return;
       }
       if (!('BarcodeDetector' in window)) {
-        showToast('❌ มือถือเครื่องนี้ไม่รองรับระบบสแกนสดผ่านเว็บ กรุณาพิมพ์เลข 16 หลักแทน'); return;
+        showToast('❌ มือถือเครื่องนี้ไม่รองรับระบบสแกนสด กรุณาพิมพ์เลข 16 หลักแทน'); return;
       }
       
       liveScannerModal.classList.add('active');
@@ -712,33 +800,40 @@
           document.getElementById('cardModalContent').style.display = 'block';
           document.getElementById('cardLoadingWrapper').style.display = 'none';
         }, 300);
-      }, 800);
+      }, 600);
     }
 
     /* ----------------------------------------------------- */
-
+    /* จัดการช่องจำนวนเงินอัจฉริยะ                             */
+    /* ----------------------------------------------------- */
     function toggleClearBtn() {
       if (amountInput.value.length > 0) clearBtn.classList.add('show');
       else clearBtn.classList.remove('show');
     }
     
-    // แก้ไขตามที่ขอ: ล้างยอดเงินเสร็จแล้ว คีย์บอร์ดจะไม่เด้งขึ้นมาอัตโนมัติ
-    function clearAmount(shouldFocus = false) {
-      amountInput.value = ''; toggleClearBtn();
-      if(shouldFocus) amountInput.focus();
+    // พอกดลบยอดเงิน X คีย์บอร์ดจะไม่เด้งขึ้นมา
+    function clearAmount(e) {
+      if(e) e.preventDefault(); // ป้องกันการ Focus อัตโนมัติเวลาทัชโดนปุ่ม
+      amountInput.value = ''; 
+      toggleClearBtn();
+      amountInput.blur(); // บังคับซ่อนคีย์บอร์ด
     }
     
     function addAmount(val) { 
-      amountInput.value = (parseFloat(amountInput.value) || 0) + val; toggleClearBtn();
+      amountInput.value = (parseFloat(amountInput.value) || 0) + val; 
+      toggleClearBtn(); 
+      amountInput.focus(); // เติมเงินลัดให้คีย์บอร์ดพร้อมพิมพ์ต่อ
     }
+    
     amountInput.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') { e.preventDefault(); amountInput.blur(); triggerQR(); }
     });
 
+    /* ----------------------------------------------------- */
+    /* การบันทึกและระบบ QR Code                               */
+    /* ----------------------------------------------------- */
     function getLocalDateString(d) {
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
+      const year = d.getFullYear(); const month = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
     }
 
@@ -746,9 +841,7 @@
       let crc = 0xFFFF;
       for (let i = 0; i < data.length; i++) {
         crc ^= (data.charCodeAt(i) << 8);
-        for (let j = 0; j < 8; j++) {
-          crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF;
-        }
+        for (let j = 0; j < 8; j++) { crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF; }
       }
       return ("0000" + crc.toString(16).toUpperCase()).slice(-4);
     }
@@ -765,20 +858,19 @@
     function triggerQR() {
       const amount = parseFloat(amountInput.value) || 0;
       if(!selectedPumpNum || !selectedOil || amount <= 0) {
-         showToast('กรุณาระบุหน้าจ่าย ชนิดน้ำมัน และจำนวนเงินให้ครบ');
-         return;
+         showToast('กรุณาระบุหน้าจ่าย ชนิดน้ำมัน และจำนวนเงินให้ครบ'); return;
       }
 
-      loadingWrapper.style.display = 'flex';
-      qrContentWrapper.style.display = 'none';
+      document.getElementById('loadingWrapper').style.display = 'flex';
+      document.getElementById('qrContentWrapper').style.display = 'none';
       qrModal.classList.add('active');
 
       document.getElementById('modalPump').textContent = 'หน้าจ่าย ' + selectedPumpNum;
       const oilSel = document.getElementById('modalOil');
       oilSel.textContent = selectedOil;
-      if(selectedOil === 'E20') oilSel.style.color = 'var(--e20)';
-      else if(selectedOil === 'B7') oilSel.style.color = 'var(--b7)';
-      else oilSel.style.color = 'var(--g95)';
+      if(selectedOil === 'E20') oilSel.style.color = '#10b981';
+      else if(selectedOil === 'B7') oilSel.style.color = '#3b82f6';
+      else oilSel.style.color = '#f97316';
       
       modalPrice.textContent = `฿${amount.toLocaleString()}`;
 
@@ -790,53 +882,36 @@
 
       setTimeout(() => {
         qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=10&data=${encodeURIComponent(generatePromptPayPayload(amount))}`;
-        loadingWrapper.style.display = 'none';
-        qrContentWrapper.style.display = 'flex';
-      }, 1000);
+        document.getElementById('loadingWrapper').style.display = 'none';
+        document.getElementById('qrContentWrapper').style.display = 'flex';
+      }, 800);
     }
 
     function closeQRModal() { qrModal.classList.remove('active'); }
     function saveFromModal() { closeQRModal(); setTimeout(() => saveRecord(), 300); }
     function showToast(msg) { toast.textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2500); }
-
-    function showSuccessAnimation() {
-      const overlay = document.getElementById('successOverlay');
-      overlay.classList.add('active');
-      setTimeout(() => overlay.classList.remove('active'), 1200);
-    }
-    
+    function showSuccessAnimation() { const overlay = document.getElementById('successOverlay'); overlay.classList.add('active'); setTimeout(() => overlay.classList.remove('active'), 1200); }
     function saveToStorage() { localStorage.setItem('gas_station_transfers', JSON.stringify(records)); renderList(); }
 
     function handleSlipUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
-      const pump = selectedPumpNum || '0';
-      const amount = amountInput.value || '0';
-      const now = new Date();
-      const timeTag = now.toTimeString().split(' ')[0].replace(/:/g, '-');
-      const dateTag = getLocalDateString(now); 
-      
+      const pump = selectedPumpNum || '0'; const amount = amountInput.value || '0';
+      const now = new Date(); const timeTag = now.toTimeString().split(' ')[0].replace(/:/g, '-'); const dateTag = getLocalDateString(now); 
       currentSlipFilename = `slip_P${pump}_${amount}THB_${dateTag}_${timeTag}.jpg`;
 
       const reader = new FileReader();
       reader.onload = function(e) {
         const img = new Image();
         img.onload = function() {
-          const canvas = document.createElement('canvas');
-          const scaleSize = 700 / img.width;
+          const canvas = document.createElement('canvas'); const scaleSize = 700 / img.width;
           canvas.width = 700; canvas.height = img.height * scaleSize;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
           currentSlipBase64 = canvas.toDataURL('image/jpeg', 0.7);
-          
-          qrImage.style.display = 'none';
-          modalPrice.style.display = 'none';
-          
+          qrImage.style.display = 'none'; modalPrice.style.display = 'none';
           document.getElementById('slipPreviewContainer').style.display = 'block';
           document.getElementById('slipPreviewImg').src = currentSlipBase64;
           slipPriceDisplay.textContent = `฿${parseFloat(amountInput.value).toLocaleString()}`;
-
           showToast('ถ่ายสลิปเรียบร้อย');
         }
         img.src = e.target.result;
@@ -852,26 +927,14 @@
 
       const now = new Date();
       const newRecord = {
-        id: Date.now(),
-        pump: 'หน้าจ่าย ' + selectedPumpNum,
-        oilType: selectedOil,
-        amount: amount,
-        phone: currentMember,
+        id: Date.now(), pump: 'หน้าจ่าย ' + selectedPumpNum, oilType: selectedOil, amount: amount, phone: currentMember,
         date: now.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }),
         time: now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        cleared: false,
-        lineSent: false,
-        slipImage: currentSlipBase64,
-        slipFilename: currentSlipFilename
+        cleared: false, lineSent: false, slipImage: currentSlipBase64, slipFilename: currentSlipFilename
       };
 
       if (currentSlipBase64 && currentSlipFilename) {
-        const downloadLink = document.createElement('a');
-        downloadLink.href = currentSlipBase64;
-        downloadLink.download = currentSlipFilename;
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        downloadLink.remove();
+        const downloadLink = document.createElement('a'); downloadLink.href = currentSlipBase64; downloadLink.download = currentSlipFilename; document.body.appendChild(downloadLink); downloadLink.click(); downloadLink.remove();
       }
 
       records.unshift(newRecord);
@@ -880,112 +943,69 @@
       clearAmount(false); currentSlipBase64 = null; currentSlipFilename = ""; currentMember = "";
       memberPhoneInput.value = ""; memberCardInput.value = "";
       updateMainButtonsUI();
-      
       showSuccessAnimation();
     }
 
-    function toggleStatus(id) {
-      records = records.map(item => item.id === id ? { ...item, cleared: !item.cleared } : item);
-      saveToStorage();
-    }
-
+    function toggleStatus(id) { records = records.map(item => item.id === id ? { ...item, cleared: !item.cleared } : item); saveToStorage(); }
+    
     function shareToLine(id) {
-      const item = records.find(r => r.id === id);
-      if (!item) return;
-      records = records.map(r => r.id === id ? { ...r, lineSent: true } : r);
-      saveToStorage();
+      const item = records.find(r => r.id === id); if (!item) return;
+      records = records.map(r => r.id === id ? { ...r, lineSent: true } : r); saveToStorage();
       let phoneText = item.phone ? `\n👤 ข้อมูลสมาชิก: ${item.phone}` : '';
       let message = `⛽ [แจ้งยอดโอน]\n📍 ${item.pump}\n🛢️ น้ำมัน: ${item.oilType}\n💰 ยอดเงิน: ${item.amount.toLocaleString()} บาท${phoneText}\n📅 วันที่: ${item.date}\n🕒 เวลา: ${item.time}`;
       window.open(`https://line.me/R/msg/text/?${encodeURIComponent(message)}`, '_blank');
     }
 
     function downloadSlip(id) {
-      const item = records.find(r => r.id === id);
-      if (!item || !item.slipImage) { showToast('ไม่มีรูปสลิปในระบบ'); return; }
-      const downloadLink = document.createElement('a');
-      downloadLink.href = item.slipImage;
-      downloadLink.download = item.slipFilename || `slip_${item.pump}_${item.amount}THB.jpg`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      downloadLink.remove();
-      showToast('ดาวน์โหลดรูปลงเครื่องแล้ว');
+      const item = records.find(r => r.id === id); if (!item || !item.slipImage) { showToast('ไม่มีรูปสลิปในระบบ'); return; }
+      const downloadLink = document.createElement('a'); downloadLink.href = item.slipImage; downloadLink.download = item.slipFilename || `slip_${item.pump}_${item.amount}THB.jpg`; document.body.appendChild(downloadLink); downloadLink.click(); downloadLink.remove(); showToast('ดาวน์โหลดรูปลงเครื่องแล้ว');
     }
 
-    function deleteRecord(id) {
-      if (confirm('ลบรายการนี้ใช่หรือไม่?')) {
-        records = records.filter(item => item.id !== id);
-        saveToStorage();
-      }
-    }
-
-    function resetDayRecords() {
-      if (confirm('ต้องการเริ่มกะใหม่ และลบข้อมูลของรอบนี้ทั้งหมดใช่หรือไม่?')) {
-        records = []; saveToStorage(); showToast('เริ่มวันใหม่เรียบร้อย');
-      }
-    }
+    function deleteRecord(id) { if (confirm('ลบรายการนี้ใช่หรือไม่?')) { records = records.filter(item => item.id !== id); saveToStorage(); } }
+    function resetDayRecords() { if (confirm('ต้องการเริ่มกะใหม่ และลบข้อมูลของรอบนี้ทั้งหมดใช่หรือไม่?')) { records = []; saveToStorage(); showToast('เริ่มวันใหม่เรียบร้อย'); } }
 
     function exportCSV() {
       if (records.length === 0) { showToast('ไม่มีข้อมูลให้ Export'); return; }
-      let csvContent = "\uFEFF"; 
-      csvContent += "วันที่,เวลา,หน้าจ่าย,ชนิดน้ำมัน,จำนวนเงิน (บาท),ข้อมูลสมาชิก,สถานะการแจ้ง,การส่งLINE,รูปสลิป\n";
-
+      let csvContent = "\uFEFFวันที่,เวลา,หน้าจ่าย,ชนิดน้ำมัน,จำนวนเงิน (บาท),ข้อมูลสมาชิก,สถานะการแจ้ง,การส่งLINE,รูปสลิป\n";
       let totalAmt = 0; let sumG95 = 0, sumE20 = 0, sumB7 = 0;
       records.forEach(item => {
         totalAmt += item.amount;
         if(item.oilType === 'G95') sumG95 += item.amount;
         else if(item.oilType === 'E20') sumE20 += item.amount;
         else if(item.oilType === 'B7') sumB7 += item.amount;
-
         const status = item.cleared ? "เคลียร์แล้ว" : "รอเคลียร์";
         const isLineSent = item.lineSent ? "ส่งแล้ว" : "ยังไม่ส่ง";
         const hasSlip = item.slipFilename ? item.slipFilename : "-";
         const phone = item.phone ? `="${item.phone}"` : "-";
-        const row = `"${item.date}","${item.time}","${item.pump}","${item.oilType}","${item.amount}",${phone},"${status}","${isLineSent}","${hasSlip}"`;
-        csvContent += row + "\n";
+        csvContent += `"${item.date}","${item.time}","${item.pump}","${item.oilType}","${item.amount}",${phone},"${status}","${isLineSent}","${hasSlip}"\n`;
       });
-
-      csvContent += "\n,,,สรุปยอดขายรวม (บาท),,,,\n";
-      csvContent += `,,,รวมทุกชนิดน้ำมัน,${totalAmt},,,,\n`;
-      csvContent += `,,,รวม G95,${sumG95},,,,\n`;
-      csvContent += `,,,รวม E20,${sumE20},,,,\n`;
-      csvContent += `,,,รวม B7,${sumB7},,,,\n`;
-      csvContent += `,,,จำนวนรายการทั้งหมด,${records.length} รายการ,,,,\n`;
+      csvContent += `\n,,,สรุปยอดขายรวม (บาท),,,,\n,,,รวมทุกชนิดน้ำมัน,${totalAmt},,,,\n,,,รวม G95,${sumG95},,,,\n,,,รวม E20,${sumE20},,,,\n,,,รวม B7,${sumB7},,,,\n,,,จำนวนรายการทั้งหมด,${records.length} รายการ,,,,\n`;
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", url);
-      downloadAnchor.setAttribute("download", `สรุปยอดโอน_${getLocalDateString(new Date())}.csv`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      document.body.removeChild(downloadAnchor);
+      const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `สรุปยอดโอน_${getLocalDateString(new Date())}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
       showToast('ดาวน์โหลด Excel สำเร็จ');
     }
 
     function renderList() {
       recordList.innerHTML = '';
       if (records.length === 0) {
-        pendingCount.textContent = '0 รายการ'; totalAmount.textContent = '฿0'; return;
+        pendingCount.textContent = '0 รายการ'; totalAmount.textContent = '฿0'; 
+        navBadgeCount.classList.remove('show'); return;
       }
-      let pending = 0; let total = 0;
       
+      let pending = 0; let total = 0;
       records.forEach(item => {
-        if (!item.cleared) pending++;
-        total += item.amount;
+        if (!item.cleared) pending++; total += item.amount;
 
-        const slipBtn = item.slipImage ? `<button class="btn-line" style="width:36px;justify-content:center;padding:0;" onclick="downloadSlip(${item.id})" title="โหลดสลิป">📥</button>` : '';
+        const slipBtn = item.slipImage ? `<button class="btn-line" style="width:38px;justify-content:center;padding:0;" onclick="downloadSlip(${item.id})" title="โหลดสลิป">📥</button>` : '';
         const oilClass = item.oilType === 'E20' ? 'tag-e20' : item.oilType === 'B7' ? 'tag-b7' : 'tag-gas95';
         const lineClass = item.lineSent ? 'btn-line sent' : 'btn-line';
-
         const slipTag = item.slipImage ? `<span class="tag tag-slip">📎 สลิป</span>` : '';
         
         let phoneTag = '';
         if(item.phone) {
-           if(item.phone.length === 16) {
-              phoneTag = `<span class="tag tag-card">💳 ${item.phone}</span>`;
-           } else {
-              phoneTag = `<span class="tag tag-phone">📞 ${item.phone}</span>`;
-           }
+           if(item.phone.length === 16) phoneTag = `<span class="tag tag-card">💳 ${item.phone}</span>`;
+           else phoneTag = `<span class="tag tag-phone">📞 ${item.phone}</span>`;
         }
 
         const itemEl = document.createElement('div');
@@ -995,8 +1015,7 @@
             <div class="tags">
               <span class="tag tag-pump">${item.pump}</span>
               <span class="tag ${oilClass}">${item.oilType}</span>
-              ${slipTag}
-              ${phoneTag}
+              ${slipTag} ${phoneTag}
             </div>
             <div class="amount">฿${item.amount.toLocaleString()}</div>
           </div>
@@ -1011,9 +1030,11 @@
           </div>`;
         recordList.appendChild(itemEl);
       });
+      
       pendingCount.textContent = `${pending} รายการ`; totalAmount.textContent = `฿${total.toLocaleString()}`;
+      if(pending > 0) { navBadgeCount.textContent = pending; navBadgeCount.classList.add('show'); } 
+      else { navBadgeCount.classList.remove('show'); }
     }
-
     renderList();
   </script>
 </body>
