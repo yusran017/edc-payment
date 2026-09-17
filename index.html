@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0b1120">
   
-  <title>ระบบบันทึกโอนเงินหน้าลาน - EDC Premium</title>
+  <title>Mobile Fuel Rewards</title>
   <link rel="manifest" href="manifest.json">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -247,7 +247,7 @@
         </div>
         <span class="promptpay-id">หจก. ทุ่งยางแดงเอ็นเตอร์ไพรส์</span>
       </div>
-      <h1>บันทึกยอดโอนหน้าลาน</h1>
+      <h1>Mobile Fuel Rewards</h1>
     </header>
 
     <div class="summary-grid">
@@ -347,7 +347,7 @@
       </div>
       <div class="header-actions">
         <button class="btn-reset" onclick="resetDayRecords()">เริ่มวันใหม่</button>
-        <button class="btn-export" onclick="exportCSV()">สรุป Excel</button>
+        <button class="btn-export" onclick="exportCSV()">สรุป Excel เชิงลึก</button>
       </div>
     </div>
     <div id="recordList" class="record-list"></div>
@@ -469,6 +469,8 @@
     let selectedPumpNum = null;
     let selectedOil = null;
     let currentMember = ""; 
+    let currentMemberType = "";
+    let currentMemberSource = "";
     let currentSlipBase64 = null;
     let currentSlipFilename = "";
 
@@ -574,6 +576,8 @@
 
       setTimeout(() => {
         currentMember = val;
+        currentMemberType = val ? "เบอร์โทรศัพท์" : "";
+        currentMemberSource = val ? "กรอกเอง" : "";
         updateMainButtonsUI();
         closePhoneModal();
         setTimeout(() => {
@@ -625,6 +629,8 @@
 
       setTimeout(() => {
         currentMember = val;
+        currentMemberType = val ? "บัตรสมาชิก" : "";
+        currentMemberSource = val ? "กรอกเอง" : "";
         updateMainButtonsUI();
         closeCardModal();
         setTimeout(() => {
@@ -704,6 +710,8 @@
       
       setTimeout(() => {
         currentMember = val;
+        currentMemberType = "บัตรสมาชิก";
+        currentMemberSource = "สแกนบาร์โค้ด";
         updateMainButtonsUI();
         closeCardModal(); 
         showToast('✅ สแกนสำเร็จและบันทึกอัตโนมัติ!');
@@ -857,6 +865,10 @@
         oilType: selectedOil,
         amount: amount,
         phone: currentMember,
+        memberType: currentMemberType,
+        memberSource: currentMemberSource,
+        paymentMethod: "QR Code PromptPay",
+        paymentStatus: currentSlipBase64 ? "แนบสลิปแล้ว" : "ยังไม่แนบสลิป",
         date: now.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }),
         time: now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
         cleared: false,
@@ -878,6 +890,7 @@
       saveToStorage();
 
       clearAmount(false); currentSlipBase64 = null; currentSlipFilename = ""; currentMember = "";
+      currentMemberType = ""; currentMemberSource = "";
       memberPhoneInput.value = ""; memberCardInput.value = "";
       updateMainButtonsUI();
       
@@ -927,9 +940,14 @@
     function exportCSV() {
       if (records.length === 0) { showToast('ไม่มีข้อมูลให้ Export'); return; }
       let csvContent = "\uFEFF"; 
-      csvContent += "วันที่,เวลา,หน้าจ่าย,ชนิดน้ำมัน,จำนวนเงิน (บาท),ข้อมูลสมาชิก,สถานะการแจ้ง,การส่งLINE,รูปสลิป\n";
+      const csvCell = value => `"${String(value ?? "-").replace(/"/g, '""')}"`;
+      csvContent += "วันที่,เวลา,หน้าจ่าย,ชนิดน้ำมัน,จำนวนเงิน (บาท),ช่องทางชำระเงิน,สถานะการชำระเงิน,ประเภทสมาชิก,วิธีรับข้อมูลสมาชิก,ข้อมูลสมาชิก,สถานะการแจ้ง,การส่งLINE,รูปสลิป\n";
 
       let totalAmt = 0; let sumG95 = 0, sumE20 = 0, sumB7 = 0;
+      const pumpSummary = {};
+      const memberSummary = { "เบอร์โทรศัพท์": 0, "บัตรสมาชิก": 0, "ไม่มีข้อมูลสมาชิก": 0 };
+      const sourceSummary = { "สแกนบาร์โค้ด": 0, "กรอกเอง": 0, "ไม่มีข้อมูล": 0 };
+      let slipCount = 0; let clearedCount = 0; let lineSentCount = 0;
       records.forEach(item => {
         totalAmt += item.amount;
         if(item.oilType === 'G95') sumG95 += item.amount;
@@ -939,17 +957,38 @@
         const status = item.cleared ? "เคลียร์แล้ว" : "รอเคลียร์";
         const isLineSent = item.lineSent ? "ส่งแล้ว" : "ยังไม่ส่ง";
         const hasSlip = item.slipFilename ? item.slipFilename : "-";
-        const phone = item.phone ? `="${item.phone}"` : "-";
-        const row = `"${item.date}","${item.time}","${item.pump}","${item.oilType}","${item.amount}",${phone},"${status}","${isLineSent}","${hasSlip}"`;
+        const memberType = item.memberType || (item.phone ? (item.phone.length === 16 ? "บัตรสมาชิก" : "เบอร์โทรศัพท์") : "ไม่มีข้อมูลสมาชิก");
+        const memberSource = item.memberSource || (item.phone ? "ไม่ระบุ" : "ไม่มีข้อมูล");
+        const paymentStatus = item.paymentStatus || (item.slipFilename ? "แนบสลิปแล้ว" : "ยังไม่แนบสลิป");
+        pumpSummary[item.pump] = (pumpSummary[item.pump] || 0) + 1;
+        memberSummary[memberType] = (memberSummary[memberType] || 0) + 1;
+        sourceSummary[memberSource] = (sourceSummary[memberSource] || 0) + 1;
+        if (item.slipFilename) slipCount++;
+        if (item.cleared) clearedCount++;
+        if (item.lineSent) lineSentCount++;
+        const row = [
+          item.date, item.time, item.pump, item.oilType, item.amount,
+          item.paymentMethod || "QR Code PromptPay", paymentStatus, memberType,
+          memberSource, item.phone ? `="${item.phone}"` : "-", status, isLineSent, hasSlip
+        ].map(csvCell).join(",");
         csvContent += row + "\n";
       });
 
-      csvContent += "\n,,,สรุปยอดขายรวม (บาท),,,,\n";
-      csvContent += `,,,รวมทุกชนิดน้ำมัน,${totalAmt},,,,\n`;
-      csvContent += `,,,รวม G95,${sumG95},,,,\n`;
-      csvContent += `,,,รวม E20,${sumE20},,,,\n`;
-      csvContent += `,,,รวม B7,${sumB7},,,,\n`;
-      csvContent += `,,,จำนวนรายการทั้งหมด,${records.length} รายการ,,,,\n`;
+      csvContent += "\nสรุปเชิงลึก,,,,,,,,,,,,\n";
+      csvContent += `รายการ,${csvCell("ค่า")},${csvCell("จำนวนเงิน/รายละเอียด")}\n`;
+      csvContent += `รวมยอดโอน,${records.length},${totalAmt.toLocaleString()} บาท\n`;
+      csvContent += `รวม G95,${records.filter(item => item.oilType === "G95").length},${sumG95.toLocaleString()} บาท\n`;
+      csvContent += `รวม E20,${records.filter(item => item.oilType === "E20").length},${sumE20.toLocaleString()} บาท\n`;
+      csvContent += `รวม B7,${records.filter(item => item.oilType === "B7").length},${sumB7.toLocaleString()} บาท\n`;
+      csvContent += `แนบสลิปแล้ว,${slipCount},รายการ\n`;
+      csvContent += `เคลียร์กับแคชเชียร์แล้ว,${clearedCount},รายการ\n`;
+      csvContent += `ส่ง LINE แล้ว,${lineSentCount},รายการ\n`;
+      csvContent += "\nสรุปตามหน้าจ่าย,\nหน้าจ่าย,จำนวนรายการ\n";
+      Object.entries(pumpSummary).forEach(([pump, count]) => { csvContent += `${csvCell(pump)},${count}\n`; });
+      csvContent += "\nสรุปข้อมูลสมาชิก,\nประเภท,จำนวนรายการ\n";
+      Object.entries(memberSummary).forEach(([type, count]) => { csvContent += `${csvCell(type)},${count}\n`; });
+      csvContent += "\nสรุปวิธีรับข้อมูลสมาชิก,\nวิธีการ,จำนวนรายการ\n";
+      Object.entries(sourceSummary).forEach(([source, count]) => { csvContent += `${csvCell(source)},${count}\n`; });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
